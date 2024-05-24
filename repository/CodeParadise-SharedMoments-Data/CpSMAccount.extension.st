@@ -1,8 +1,12 @@
-Class {
-	#name : #CpSMAccount,
-	#superclass : #CpNodeJSRestCollection,
-	#category : #'CodeParadise-SharedMoments-Data-Model'
-}
+Extension { #name : #CpSMAccount }
+
+{ #category : #'*CodeParadise-SharedMoments-Data' }
+CpSMAccount >> asDictionary [
+
+	^ {
+		#email -> email
+	} asOrderedDictionary
+]
 
 { #category : #'*CodeParadise-SharedMoments-Data' }
 CpSMAccount class >> create: anObject [
@@ -70,12 +74,4 @@ CpSMAccount class >> update: aString with: anObject [
 	<restParam: 2 from: #body>
 
 	self traceCr: 'update ', aString, ' with ', anObject printString
-]
-
-{ #category : #'*CodeParadise-SharedMoments-Data' }
-CpSMAccount >> asDictionary [
-
-	^ {
-		#email -> email
-	} asOrderedDictionary
 ]

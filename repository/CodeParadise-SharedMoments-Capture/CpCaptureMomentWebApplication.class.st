@@ -5,6 +5,18 @@ Class {
 }
 
 { #category : #accessing }
+CpCaptureMomentWebApplication class >> allowedPackages [
+
+	"Answer a collection of Packages which are allowed to contain classes to install in the receiver.
+
+	Add package with the VideoElement class.
+
+	See comment in superclass."
+
+	^ super allowedPackages, { CpBrowserVideoElement package }
+]
+
+{ #category : #accessing }
 CpCaptureMomentWebApplication class >> clientBehaviorClass [
 
 	^ CpCaptureMomentWebClientBehavior
