@@ -1,14 +1,6 @@
 Extension { #name : #CpSMAccount }
 
 { #category : #'*CodeParadise-SharedMoments-Data' }
-CpSMAccount >> asDictionary [
-
-	^ {
-		#email -> email
-	} asOrderedDictionary
-]
-
-{ #category : #'*CodeParadise-SharedMoments-Data' }
 CpSMAccount class >> create: anObject [
 
 	"Create a new account and answer its identifier"

@@ -8,3 +8,11 @@ Class {
 	],
 	#category : #'CodeParadise-SharedMoments-Model'
 }
+
+{ #category : #converting }
+CpSMAccount >> asDictionary [
+
+	^ {
+		#email -> email
+	} asOrderedDictionary
+]
