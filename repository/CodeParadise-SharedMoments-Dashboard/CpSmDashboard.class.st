@@ -1,5 +1,5 @@
 Class {
 	#name : #CpSmDashboard,
-	#superclass : #Object,
+	#superclass : #CpModel,
 	#category : #'CodeParadise-SharedMoments-Dashboard-Model'
 }

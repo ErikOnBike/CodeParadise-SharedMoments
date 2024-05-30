@@ -1,6 +1,6 @@
 Class {
 	#name : #CpSMAccount,
-	#superclass : #CpNodeJSRestResource,
+	#superclass : #CpSMModel,
 	#instVars : [
 		'id',
 		'email',
@@ -8,11 +8,3 @@ Class {
 	],
 	#category : #'CodeParadise-SharedMoments-Model'
 }
-
-{ #category : #converting }
-CpSMAccount >> asDictionary [
-
-	^ {
-		#email -> email
-	} asOrderedDictionary
-]
