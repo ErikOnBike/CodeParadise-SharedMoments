@@ -1,7 +1,7 @@
-Extension { #name : #CpSMModel }
+Extension { #name : #SmModel }
 
 { #category : #'*CodeParadise-SharedMoments-Data' }
-CpSMModel >> asDictionary [
+SmModel >> asDictionary [
 
 	"Answer a Dictionary representing the receiver"
 
@@ -9,7 +9,7 @@ CpSMModel >> asDictionary [
 ]
 
 { #category : #'*CodeParadise-SharedMoments-Data' }
-CpSMModel class >> installClassMethod: aCompiledMethod [
+SmModel class >> installClassMethod: aCompiledMethod [
 
 	super installClassMethod: aCompiledMethod.
 
@@ -17,7 +17,7 @@ CpSMModel class >> installClassMethod: aCompiledMethod [
 ]
 
 { #category : #'*CodeParadise-SharedMoments-Data' }
-CpSMModel class >> removeClassMethod: aCompiledMethod [
+SmModel class >> removeClassMethod: aCompiledMethod [
 
 	super removeClassMethod: aCompiledMethod.
 

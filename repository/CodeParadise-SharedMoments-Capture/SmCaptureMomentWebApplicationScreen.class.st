@@ -1,11 +1,11 @@
 Class {
-	#name : #CpCaptureMomentWebApplicationScreen,
+	#name : #SmCaptureMomentWebApplicationScreen,
 	#superclass : #CpView,
 	#category : #'CodeParadise-SharedMoments-Capture-View'
 }
 
 { #category : #'web resources' }
-CpCaptureMomentWebApplicationScreen class >> globalStyle [
+SmCaptureMomentWebApplicationScreen class >> globalStyle [
 
 	<webResource: #css>
 
@@ -19,7 +19,7 @@ CpCaptureMomentWebApplicationScreen class >> globalStyle [
 ]
 
 { #category : #'web resources' }
-CpCaptureMomentWebApplicationScreen class >> style [
+SmCaptureMomentWebApplicationScreen class >> style [
 
 	<webResource: #css>
 
@@ -35,7 +35,7 @@ CpCaptureMomentWebApplicationScreen class >> style [
 ]
 
 { #category : #'web resources' }
-CpCaptureMomentWebApplicationScreen class >> template [
+SmCaptureMomentWebApplicationScreen class >> template [
 
 	<webResource: #html>
 
@@ -45,9 +45,9 @@ CpCaptureMomentWebApplicationScreen class >> template [
 ]
 
 { #category : #initialization }
-CpCaptureMomentWebApplicationScreen >> initialize [
+SmCaptureMomentWebApplicationScreen >> initialize [
 
 	super initialize.
 
-	self appendChild: CpCamera new atSlotNamed: #camera
+	self appendChild: SmCamera new atSlotNamed: #camera
 ]

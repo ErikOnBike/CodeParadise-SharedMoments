@@ -1,14 +1,14 @@
 Class {
-	#name : #CpCaptureMomentWebClientBehavior,
+	#name : #SmCaptureMomentWebClientBehavior,
 	#superclass : #CpWebClientBehavior,
 	#category : #'CodeParadise-SharedMoments-Capture-Application'
 }
 
 { #category : #initialization }
-CpCaptureMomentWebClientBehavior >> initialize [
+SmCaptureMomentWebClientBehavior >> initialize [
 
 	super initialize.
 
 	CpHtmlElement documentBody
-		appendChild: CpCaptureMomentWebApplicationScreen new
+		appendChild: SmCaptureMomentWebApplicationScreen new
 ]

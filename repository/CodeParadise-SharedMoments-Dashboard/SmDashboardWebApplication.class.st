@@ -1,5 +1,5 @@
 Class {
-	#name : #CpSharedMomentsDashboardWebApplication,
+	#name : #SmDashboardWebApplication,
 	#superclass : #CpMvpWebApplication,
 	#instVars : [
 		'dashboard'
@@ -8,15 +8,15 @@ Class {
 }
 
 { #category : #accessing }
-CpSharedMomentsDashboardWebApplication >> applicationModel [
+SmDashboardWebApplication >> applicationModel [
 
 	^ dashboard
 ]
 
 { #category : #initialization }
-CpSharedMomentsDashboardWebApplication >> initialize [
+SmDashboardWebApplication >> initialize [
 
 	super initialize.
 
-	dashboard := CpSmDashboard new
+	dashboard := SmDashboard new
 ]

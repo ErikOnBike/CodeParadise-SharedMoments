@@ -13,7 +13,7 @@ appear allowing to keep the picture or take a new one.
 
 "
 Class {
-	#name : #CpCamera,
+	#name : #SmCamera,
 	#superclass : #CpTemplateComponent,
 	#instVars : [
 		'facingMode',
@@ -25,7 +25,7 @@ Class {
 }
 
 { #category : #'class initialization' }
-CpCamera class >> beLoaded [
+SmCamera class >> beLoaded [
 
 	CpBrowserScreenOrientation beLoaded.
 	CpBrowserMediaStream beLoaded.
@@ -34,7 +34,7 @@ CpCamera class >> beLoaded [
 ]
 
 { #category : #'web resources' }
-CpCamera class >> style [
+SmCamera class >> style [
 
 	<webResource: #css>
 
@@ -158,7 +158,7 @@ CpCamera class >> style [
 ]
 
 { #category : #'web resources' }
-CpCamera class >> template [
+SmCamera class >> template [
 
 	<webResource: #html>
 
@@ -181,11 +181,11 @@ CpCamera class >> template [
 ]
 
 { #category : #view }
-CpCamera >> addButton [
+SmCamera >> addButton [
 
 	| button |
 
-	button := CpCameraButton new
+	button := SmCameraButton new
 		when: CpClickEvent primary only send: #takePicture to: self ;
 		yourself.
 
@@ -193,7 +193,7 @@ CpCamera >> addButton [
 ]
 
 { #category : #view }
-CpCamera >> addCanvas [
+SmCamera >> addCanvas [
 
 	self
 		appendChild: (CpHtmlElement newWithTag: #canvas)
@@ -201,7 +201,7 @@ CpCamera >> addCanvas [
 ]
 
 { #category : #view }
-CpCamera >> addFlip [
+SmCamera >> addFlip [
 
 	| flip |
 
@@ -213,7 +213,7 @@ CpCamera >> addFlip [
 ]
 
 { #category : #view }
-CpCamera >> addKeepButton [
+SmCamera >> addKeepButton [
 
 	| keepButton |
 
@@ -226,7 +226,7 @@ CpCamera >> addKeepButton [
 ]
 
 { #category : #view }
-CpCamera >> addOrientationChangeHandler [
+SmCamera >> addOrientationChangeHandler [
 
 	"Add event handler for device orientation.
 
@@ -272,7 +272,7 @@ CpCamera >> addOrientationChangeHandler [
 ]
 
 { #category : #view }
-CpCamera >> addRetakeButton [
+SmCamera >> addRetakeButton [
 
 	| retakeButton |
 
@@ -285,7 +285,7 @@ CpCamera >> addRetakeButton [
 ]
 
 { #category : #view }
-CpCamera >> addSwitch [
+SmCamera >> addSwitch [
 
 	| switch |
 
@@ -297,7 +297,7 @@ CpCamera >> addSwitch [
 ]
 
 { #category : #view }
-CpCamera >> addVideo [
+SmCamera >> addVideo [
 
 	self
 		appendChild: ((CpHtmlElement newWithTag: #video)
@@ -307,14 +307,14 @@ CpCamera >> addVideo [
 ]
 
 { #category : #view }
-CpCamera >> addVisibilityChangeHandler [
+SmCamera >> addVisibilityChangeHandler [
 
 	visibilityChangeHandler := CpBrowserDocument current
 		addEventListener: #visibilitychange handler: [ self visibilityChanged ]
 ]
 
 { #category : #view }
-CpCamera >> attachVideo [
+SmCamera >> attachVideo [
 
 	"Do not attach video if an image is captured"
 	self hasCaptured
@@ -327,13 +327,13 @@ CpCamera >> attachVideo [
 ]
 
 { #category : #accessing }
-CpCamera >> canvasElement [
+SmCamera >> canvasElement [
 
 	^ CpBrowserCanvasElement domElement: (self firstChildAtSlotNamed: #picture)
 ]
 
 { #category : #view }
-CpCamera >> detachVideo [
+SmCamera >> detachVideo [
 
 	videoStream
 		ifNotNil: [
@@ -346,7 +346,7 @@ CpCamera >> detachVideo [
 ]
 
 { #category : #actions }
-CpCamera >> flipImage [
+SmCamera >> flipImage [
 
 	| status statusElement |
 
@@ -366,13 +366,13 @@ CpCamera >> flipImage [
 ]
 
 { #category : #testing }
-CpCamera >> hasCaptured [
+SmCamera >> hasCaptured [
 
 	^ self isClassed: #captured
 ]
 
 { #category : #initialization }
-CpCamera >> initialize [
+SmCamera >> initialize [
 
 	super initialize.
 
@@ -396,7 +396,7 @@ CpCamera >> initialize [
 ]
 
 { #category : #actions }
-CpCamera >> keepPicture [
+SmCamera >> keepPicture [
 
 	"Keep the current picture, announcing its content"
 
@@ -405,7 +405,7 @@ CpCamera >> keepPicture [
 ]
 
 { #category : #'event handling' }
-CpCamera >> orientationChanged [
+SmCamera >> orientationChanged [
 
 	"Add orientation attribute to the receiver to describe orientation
 	(to allow position updates in CSS).
@@ -425,7 +425,7 @@ CpCamera >> orientationChanged [
 ]
 
 { #category : #accessing }
-CpCamera >> orientationFromAngle: anInteger [
+SmCamera >> orientationFromAngle: anInteger [
 
 	anInteger == 0
 		ifTrue: [ ^ #straight ].
@@ -444,7 +444,7 @@ CpCamera >> orientationFromAngle: anInteger [
 ]
 
 { #category : #initialization }
-CpCamera >> release [
+SmCamera >> release [
 
 	self removeVisibilityChangeHandler.
 
@@ -452,14 +452,14 @@ CpCamera >> release [
 ]
 
 { #category : #view }
-CpCamera >> removeVisibilityChangeHandler [
+SmCamera >> removeVisibilityChangeHandler [
 
 	CpBrowserDocument current
 		removeEventListener: visibilityChangeHandler
 ]
 
 { #category : #actions }
-CpCamera >> retakePicture [
+SmCamera >> retakePicture [
 
 	"Retake picture, so change state and start video"
 
@@ -469,7 +469,7 @@ CpCamera >> retakePicture [
 ]
 
 { #category : #actions }
-CpCamera >> switchCamera [
+SmCamera >> switchCamera [
 
 	"Swich between user facing and environment facing camera.
 	Stop and start video explicitly, otherwise it might remain in use."
@@ -486,7 +486,7 @@ CpCamera >> switchCamera [
 ]
 
 { #category : #actions }
-CpCamera >> takePicture [
+SmCamera >> takePicture [
 
 	"Take picture from the videa stream.
 	Adjust size according to video source and update state."
@@ -511,13 +511,13 @@ CpCamera >> takePicture [
 ]
 
 { #category : #accessing }
-CpCamera >> videoElement [
+SmCamera >> videoElement [
 
 	^ CpBrowserVideoElement domElement: (self firstChildAtSlotNamed: #video)
 ]
 
 { #category : #accessing }
-CpCamera >> videoStream [
+SmCamera >> videoStream [
 
 	"Answer the MediaStream (as a Promise) for the current facing mode (i.e. environment or user)"
 
@@ -531,7 +531,7 @@ CpCamera >> videoStream [
 ]
 
 { #category : #'event handling' }
-CpCamera >> visibilityChanged [
+SmCamera >> visibilityChanged [
 
 	"Stop the video if the document is not longer visible"
 
@@ -541,7 +541,7 @@ CpCamera >> visibilityChanged [
 ]
 
 { #category : #accessing }
-CpCamera >> withVideoStreamDo: aBlock [
+SmCamera >> withVideoStreamDo: aBlock [
 
 	"Perform an operation on the video stream"
 

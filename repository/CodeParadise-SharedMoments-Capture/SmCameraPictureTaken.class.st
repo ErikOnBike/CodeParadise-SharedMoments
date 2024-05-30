@@ -1,5 +1,5 @@
 Class {
-	#name : #CpCameraPictureTaken,
+	#name : #SmCameraPictureTaken,
 	#superclass : #Announcement,
 	#instVars : [
 		'picture'

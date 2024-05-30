@@ -1,6 +1,6 @@
 Class {
-	#name : #CpSMAccount,
-	#superclass : #CpSMModel,
+	#name : #SmAccount,
+	#superclass : #SmModel,
 	#instVars : [
 		'id',
 		'email',

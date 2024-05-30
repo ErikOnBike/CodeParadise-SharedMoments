@@ -1,7 +1,7 @@
-Extension { #name : #CpSMAccount }
+Extension { #name : #SmAccount }
 
 { #category : #'*CodeParadise-SharedMoments-Data' }
-CpSMAccount >> asDictionary [
+SmAccount >> asDictionary [
 
 	^ {
 		#email -> email
@@ -9,7 +9,7 @@ CpSMAccount >> asDictionary [
 ]
 
 { #category : #'*CodeParadise-SharedMoments-Data' }
-CpSMAccount class >> create: anObject [
+SmAccount class >> create: anObject [
 
 	"Create a new account and answer its identifier"
 
@@ -24,7 +24,7 @@ CpSMAccount class >> create: anObject [
 ]
 
 { #category : #'*CodeParadise-SharedMoments-Data' }
-CpSMAccount class >> delete: aString [
+SmAccount class >> delete: aString [
 
 	"Delete an existing account"
 
@@ -37,7 +37,7 @@ CpSMAccount class >> delete: aString [
 ]
 
 { #category : #'*CodeParadise-SharedMoments-Data' }
-CpSMAccount class >> gc [
+SmAccount class >> gc [
 
 	"Perform GC"
 
@@ -52,7 +52,7 @@ CpSMAccount class >> gc [
 ]
 
 { #category : #'*CodeParadise-SharedMoments-Data' }
-CpSMAccount class >> list [
+SmAccount class >> list [
 
 	"Answer all accounts"
 
@@ -65,7 +65,7 @@ CpSMAccount class >> list [
 ]
 
 { #category : #'*CodeParadise-SharedMoments-Data' }
-CpSMAccount class >> update: aString with: anObject [
+SmAccount class >> update: aString with: anObject [
 
 	"Update an existing account"
 

@@ -1,5 +1,5 @@
 Class {
-	#name : #CpSMModel,
+	#name : #SmModel,
 	#superclass : #CpBaseModel,
 	#category : #'CodeParadise-SharedMoments-Model'
 }
