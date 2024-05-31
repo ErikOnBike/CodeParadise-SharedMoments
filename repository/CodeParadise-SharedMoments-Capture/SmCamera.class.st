@@ -30,7 +30,9 @@ SmCamera class >> beLoaded [
 	CpBrowserScreenOrientation beLoaded.
 	CpBrowserMediaStream beLoaded.
 	CpBrowserMediaStreamTrack beLoaded.
-	CpBrowserCanvasRenderingContext2D beLoaded
+	CpBrowserCanvasRenderingContext2D beLoaded.
+	SlIcon beLoaded.
+	SmCameraButton beLoaded
 ]
 
 { #category : #'web resources' }
@@ -45,24 +47,25 @@ SmCamera class >> style [
 		height: 100%;
 		background-color: black;
 	}
-	::slotted([slot="video"]) {
+	#video {
 		width: 100%;
 		height: 100%;
 		max-width: 100vw;
 		max-height: 100vh;
+		transition: transform .5s;
 	}
 	/* By default flip image for user facing camera */
-	:host(.facing-user:not(.flipped)) ::slotted([slot="video"]) {
+	:host(.facing-user:not(.flipped)) #video {
 		transform: scale(-1,1);
 	}
-	::slotted([slot="picture"]) {
+	#picture {
 		width: 100%;
 		height: 100%;
 		max-width: 100vw;
 		max-height: 100vh;
 		object-fit: contain;
 	}
-	::slotted([slot="button"]) {
+	#button {
 		display: block;
 		position: absolute;
 		left: calc(50% - 25px);
@@ -70,7 +73,7 @@ SmCamera class >> style [
 		width: 50px;
 		height: 50px;
 	}
-	::slotted([slot="flip"]) {
+	#flip {
 		display: none;
 		position: absolute;
 		left: 25px;
@@ -78,10 +81,10 @@ SmCamera class >> style [
 		font-size: 50px;
 		color: white;
 	}
-	:host(.facing-user) ::slotted([slot="flip"]) {
+	:host(.facing-user) #flip {
 		display: block;
 	}
-	::slotted([slot="flip-status"]) {
+	#flip-status {
 		display: block;
 		position: absolute;
 		left: 50%;
@@ -97,7 +100,13 @@ SmCamera class >> style [
 		color: black;
 		opacity: 0;
 	}
-	::slotted([slot="switch"]) {
+	#flip-status::after {
+		content: "Mirrored";
+	}
+	:host(.flipped) #flip-status::after {
+		content: "Actual";
+	}
+	#switch {
 		position: absolute;
 		right: 25px;
 		bottom: 25px;
@@ -114,39 +123,40 @@ SmCamera class >> style [
 		left: 10%;
 		width: 80%;
 	}
-	#buttons ::slotted(sl-button) {
+	#buttons sl-button {
 		width: 100%;
 	}
 	/* Position buttons based on orientation */
-	:host([orientation="left"]) ::slotted([slot="flip"]) {
+	:host([orientation="left"]) #flip {
 		left: auto;
 		bottom: auto;
 		right: 25px;
 		top: 25px;
 	}
-	:host([orientation="left"]) ::slotted([slot="button"]) {
+	:host([orientation="left"]) #button {
 		left: auto;
 		bottom: auto;
 		right: 25px;
 		top: calc(50% - 25px);
 	}
-	:host([orientation="right"]) ::slotted([slot="flip"]) {
+	:host([orientation="right"]) #flip {
 		left: 25px;
 		bottom: auto;
 		top: 25px;
 	}
-	:host([orientation="right"]) ::slotted([slot="button"]) {
+	:host([orientation="right"]) #button {
 		left: 25px;
 		bottom: auto;
 		top: calc(50% - 25px);
 	}
-	:host([orientation="right"]) ::slotted([slot="switch"]) {
+	:host([orientation="right"]) #switch {
 		right: auto;
 		left: 25px;
 	}
 	/* For use on desktop/laptop with mouse pointer */
-	slot[name="button"],
-	slot[name="switch"] {
+	#button,
+	#flip,
+	#switch {
 		cursor: pointer;
 	}
 	:host(.captured) #capture {
@@ -164,68 +174,23 @@ SmCamera class >> template [
 
 	^ '<div id="container">
 		<div id="capture">
-			<slot name="video"></slot>
-			<slot name="button"></slot>
-			<slot name="flip"></slot>
-			<slot name="flip-status"></slot>
-			<slot name="switch"></slot>
+			<video id="video" playsinline></video>
+			<sm-camera-button id="button"></sm-camera-button>
+			<sl-icon id="flip" name="arrow-left-right"></sl-icon>
+			<div id="flip-status"></div>
+			<sl-icon id="switch" name="camera"></sl-icon>
 		</div>
 		<div id="captured">
-			<slot name="picture"></slot>
+			<canvas id="picture"></canvas>
 			<div id="buttons">
-				<slot name="keep"></slot>
-				<slot name="retake"></slot>
+				<sl-button id="keep" pill>Keep</sl-button>
+				<sl-button id="retake" pill>Retake</sl-button>
 			</div>
 		</div>
 	</div>'
 ]
 
-{ #category : #view }
-SmCamera >> addButton [
-
-	| button |
-
-	button := SmCameraButton new
-		when: CpClickEvent primary only send: #takePicture to: self ;
-		yourself.
-
-	self appendChild: button atSlotNamed: #button
-]
-
-{ #category : #view }
-SmCamera >> addCanvas [
-
-	self
-		appendChild: (CpHtmlElement newWithTag: #canvas)
-		atSlotNamed: #picture
-]
-
-{ #category : #view }
-SmCamera >> addFlip [
-
-	| flip |
-
-	flip := (SlIcon named: 'arrow-left-right')
-		when: CpClickEvent primary only send: #flipImage to: self ;
-		yourself.
-
-	self appendChild: flip atSlotNamed: #flip
-]
-
-{ #category : #view }
-SmCamera >> addKeepButton [
-
-	| keepButton |
-
-	keepButton := (SlButton label: 'Keep')
-		bePill ;
-		when: CpClickEvent primary only send: #keepPicture to: self ;
-		yourself.
-
-	self appendChild: keepButton atSlotNamed: #keep
-]
-
-{ #category : #view }
+{ #category : #initialization }
 SmCamera >> addOrientationChangeHandler [
 
 	"Add event handler for device orientation.
@@ -255,7 +220,7 @@ SmCamera >> addOrientationChangeHandler [
 										addEventListener: #deviceorientation handler: [ self orientationChanged ] ] ]
 						catch: [
 							CpHtmlElement documentBody appendChild: ((SlButton label: 'Start')
-								when: CpClickEvent primary only do: [ :event |
+								when: CpClickEvent basicPrimary do: [ :event |
 									event target remove.
 									(permissionFunction call: orientationEventClass withArguments: nil)
 										then: [ :permission |
@@ -271,42 +236,7 @@ SmCamera >> addOrientationChangeHandler [
 						addEventListener: #deviceorientation handler: [ self orientationChanged ]"
 ]
 
-{ #category : #view }
-SmCamera >> addRetakeButton [
-
-	| retakeButton |
-
-	retakeButton := (SlButton label: 'Retake')
-		bePill ;
-		when: CpClickEvent primary only send: #retakePicture to: self ;
-		yourself.
-
-	self appendChild: retakeButton atSlotNamed: #retake
-]
-
-{ #category : #view }
-SmCamera >> addSwitch [
-
-	| switch |
-
-	switch := (SlIcon named: 'camera')
-		when: CpClickEvent primary only send: #switchCamera to: self ;
-		yourself.
-
-	self appendChild: switch atSlotNamed: #switch
-]
-
-{ #category : #view }
-SmCamera >> addVideo [
-
-	self
-		appendChild: ((CpHtmlElement newWithTag: #video)
-			attributeAt: 'playsinline' put: '' ;
-			yourself)
-		atSlotNamed: #video
-]
-
-{ #category : #view }
+{ #category : #initialization }
 SmCamera >> addVisibilityChangeHandler [
 
 	visibilityChangeHandler := CpBrowserDocument current
@@ -327,9 +257,15 @@ SmCamera >> attachVideo [
 ]
 
 { #category : #accessing }
+SmCamera >> cameraButton [
+
+	^ self shadowedElementWithId: #button
+]
+
+{ #category : #accessing }
 SmCamera >> canvasElement [
 
-	^ CpBrowserCanvasElement domElement: (self firstChildAtSlotNamed: #picture)
+	^ CpBrowserCanvasElement domElement: (self shadowedElementWithId: #picture)
 ]
 
 { #category : #view }
@@ -345,24 +281,26 @@ SmCamera >> detachVideo [
 		srcObject: nil
 ]
 
+{ #category : #accessing }
+SmCamera >> flipButton [
+
+	^ self shadowedElementWithId: #flip
+]
+
 { #category : #actions }
 SmCamera >> flipImage [
 
-	| status statusElement |
-
 	self toggleClass: #flipped.
-
-	"Update status (default is mirrored)"
-	status := (self isClassed: #flipped)
-		ifTrue: [ 'Actual' ]
-		ifFalse: [ 'Mirrored' ].
-
-	statusElement := (self firstChildAtSlotNamed: #'flip-status')
-		ifNotNil: [ :element | element textContent: status ]
-		ifNil: [ self appendChild: status asHtmlElement atSlotNamed: #'flip-status' ].
-
+self traceCr: 'Yes'.
 	"Temporarily show status"
-	statusElement animate: CpCssAnimation showTemporarilyKeyframes duration: 2500
+	self flipStatus
+		animate: CpCssAnimation showTemporarilyKeyframes duration: 2500
+]
+
+{ #category : #accessing }
+SmCamera >> flipStatus [
+
+	^ self shadowedElementWithId: #'flip-status'
 ]
 
 { #category : #testing }
@@ -378,21 +316,40 @@ SmCamera >> initialize [
 
 	facingMode := #environment.
 
-	self
-		addVideo ;
-		attachVideo ;
-		addCanvas ;
-		addButton ;
-		addFlip ;
-		addSwitch ;
-		addKeepButton ;
-		addRetakeButton.
-
 	"Add event handler to turn off video when document is no longer visible"
 	self addVisibilityChangeHandler.
 
 	"Add event handler to switch UI when orientation changes"
 	self addOrientationChangeHandler
+]
+
+{ #category : #initialization }
+SmCamera >> initializeShadowRoot [
+
+	super initializeShadowRoot.
+self traceCr: 'here'.
+	self cameraButton
+		when: CpClickEvent basicPrimary send: #takePicture to: self.
+
+	self flipButton
+		when: CpClickEvent basicPrimary send: #flipImage to: self.
+
+	self switchButton
+		when: CpClickEvent basicPrimary send: #switchCamera to: self.
+
+	self keepButton
+		when: CpClickEvent basicPrimary send: #keepPicture to: self.
+
+	self retakeButton
+		when: CpClickEvent basicPrimary send: #retakePicture to: self.
+
+	self attachVideo
+]
+
+{ #category : #accessing }
+SmCamera >> keepButton [
+
+	^ self shadowedElementWithId: #keep
 ]
 
 { #category : #actions }
@@ -451,11 +408,17 @@ SmCamera >> release [
 	super release
 ]
 
-{ #category : #view }
+{ #category : #initialization }
 SmCamera >> removeVisibilityChangeHandler [
 
 	CpBrowserDocument current
 		removeEventListener: visibilityChangeHandler
+]
+
+{ #category : #accessing }
+SmCamera >> retakeButton [
+
+	^ self shadowedElementWithId: #retake
 ]
 
 { #category : #actions }
@@ -466,6 +429,12 @@ SmCamera >> retakePicture [
 	self removeClass: #captured.
 
 	self attachVideo
+]
+
+{ #category : #accessing }
+SmCamera >> switchButton [
+
+	^ self shadowedElementWithId: #switch
 ]
 
 { #category : #actions }
@@ -513,7 +482,7 @@ SmCamera >> takePicture [
 { #category : #accessing }
 SmCamera >> videoElement [
 
-	^ CpBrowserVideoElement domElement: (self firstChildAtSlotNamed: #video)
+	^ CpBrowserVideoElement domElement: (self shadowedElementWithId: #video)
 ]
 
 { #category : #accessing }
