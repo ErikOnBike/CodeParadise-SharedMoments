@@ -291,7 +291,7 @@ SmCameraComponent >> flipButton [
 SmCameraComponent >> flipImage [
 
 	self toggleClass: #flipped.
-self traceCr: 'Yes'.
+
 	"Temporarily show status"
 	self flipStatus
 		animate: CpCssAnimation showTemporarilyKeyframes duration: 2500
@@ -327,7 +327,7 @@ SmCameraComponent >> initialize [
 SmCameraComponent >> initializeShadowRoot [
 
 	super initializeShadowRoot.
-self traceCr: 'here'.
+
 	self cameraButton
 		when: CpClickEvent basicPrimary send: #takePicture to: self.
 
