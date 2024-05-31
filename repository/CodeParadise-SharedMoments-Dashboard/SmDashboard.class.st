@@ -8,6 +8,12 @@ Class {
 }
 
 { #category : #accessing }
+SmDashboard >> account [
+
+	^ account
+]
+
+{ #category : #accessing }
 SmDashboard >> account: anAccount [
 
 	account := anAccount.

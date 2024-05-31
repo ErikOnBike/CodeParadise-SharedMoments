@@ -29,5 +29,6 @@ SmAccountsRestHttpServerApplication >> load [
 
 	self
 		installRequiredClass: CpNodeJSRestHttpServerStarter ;
+		installClass: ValueChanged ; "Special case"
 		installRequiredClass: SmAccount
 ]

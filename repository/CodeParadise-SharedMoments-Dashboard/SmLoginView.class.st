@@ -14,7 +14,7 @@ SmLoginView class >> style [
 		-webkit-box-sizing: border-box;
 		box-sizing: border-box;
 	}
-	:host {
+	#container {
 		display: flex;
 		height: 100%;
 		justify-content: center;
@@ -51,7 +51,7 @@ SmLoginView class >> template [
 				<sl-input id="password" type="password" label="Password" password-toggle><sl-icon slot="prefix" name="shield-lock"></sl-icon></sl-input>
 			</div>
 			<div slot="footer"><sl-button id="login" variant="primary">Login</sl-button></div>
-		</div>
+		</sl-card>
 	</div>'
 ]
 

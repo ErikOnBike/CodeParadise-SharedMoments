@@ -8,12 +8,16 @@ Class {
 SmDashboardApplicationView class >> beLoaded [
 
 	SlAlert beLoaded.
+	SlAvatar beLoaded.
 	SlButton beLoaded.
 	SlCard beLoaded.
 	SlDivider beLoaded.
 	SlIcon beLoaded.
 	SlIconButton beLoaded.
-	SlInput beLoaded
+	SlInput beLoaded.
+	SlSwitch beLoaded.
+	SlTag beLoaded.
+	SlTooltip beLoaded
 ]
 
 { #category : #'web resources' }
@@ -28,6 +32,9 @@ SmDashboardApplicationView class >> globalStyle [
 	}
 	body {
 		font-family: "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	}
+	sl-icon::part(svg) {
+		overflow: visible;
 	}'
 ]
 

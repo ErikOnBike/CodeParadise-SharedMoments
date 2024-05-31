@@ -21,6 +21,10 @@ SmDashboardMenuBarView class >> style [
 		padding-left: 1em;
 		padding-right: 1em;
 	}
+	#slogan {
+		font-style: italic;
+		text-decoration: underline;
+	}
 	sl-divider {
 		--spacing: 4px;
 		height: 1.4em;
@@ -36,7 +40,7 @@ SmDashboardMenuBarView class >> template [
 	<webResource: #html>
 
 	^ '<div id="container">
-		<div></div>
+		<div id="slogan">Shared Moments - Share your moments with your loved ones</div>
 		<div><sl-divider vertical></sl-divider><sl-icon-button id="logout" name="box-arrow-right"></sl-icon-button></div>
 	</div>'
 ]

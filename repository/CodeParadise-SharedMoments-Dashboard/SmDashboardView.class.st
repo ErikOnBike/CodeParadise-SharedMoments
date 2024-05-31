@@ -21,10 +21,15 @@ SmDashboardView class >> style [
 		justify-content: space-between;
 		align-items: stretch;
 	}
+	#menu-bar {
+		flex: 0 0 auto;
+	}
 	#content {
-		flex: 1 1 auto;
+		flex: 1 0 0;
+		overflow-y: scroll;
 	}
 	#status-bar {
+		flex: 0 0 auto;
 		background-color: rgba(0, 0, 255, .1);
 	}'
 ]
