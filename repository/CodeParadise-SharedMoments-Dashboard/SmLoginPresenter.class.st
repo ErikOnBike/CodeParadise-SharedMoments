@@ -3,3 +3,28 @@ Class {
 	#superclass : #CpPresenter,
 	#category : #'CodeParadise-SharedMoments-Dashboard-Presenter'
 }
+
+{ #category : #'event handling' }
+SmLoginPresenter >> login: anActionRequested [
+
+	| credentials account |
+
+	credentials := anActionRequested parameters.
+
+	account := SmAccount forCredentials: credentials.
+
+	account ifNil: [
+		self view renderFailedLogin.
+		^ self ].
+
+	self model account: account
+]
+
+{ #category : #view }
+SmLoginPresenter >> viewCreated [
+
+	super viewCreated.
+
+	self view
+		when: (CpActionRequested id: #login) send: #login: to: self
+]
