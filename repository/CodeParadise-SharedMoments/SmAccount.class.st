@@ -17,7 +17,7 @@ SmAccount class >> forCredentials: aDictionary [
 
 	email := aDictionary at: #email ifAbsent: [ ^ nil ].
 
-	email = 'aap'
+	email = 'nobody'
 		ifFalse: [ ^ nil ].
 
 	^ self basicNew
