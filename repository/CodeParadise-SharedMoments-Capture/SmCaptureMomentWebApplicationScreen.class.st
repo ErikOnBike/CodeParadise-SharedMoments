@@ -49,5 +49,5 @@ SmCaptureMomentWebApplicationScreen >> initialize [
 
 	super initialize.
 
-	self appendChild: SmCamera new atSlotNamed: #camera
+	self appendChild: SmCameraComponent new atSlotNamed: #camera
 ]

@@ -13,7 +13,7 @@ appear allowing to keep the picture or take a new one.
 
 "
 Class {
-	#name : #SmCamera,
+	#name : #SmCameraComponent,
 	#superclass : #CpTemplateComponent,
 	#instVars : [
 		'facingMode',
@@ -25,7 +25,7 @@ Class {
 }
 
 { #category : #'class initialization' }
-SmCamera class >> beLoaded [
+SmCameraComponent class >> beLoaded [
 
 	CpBrowserScreenOrientation beLoaded.
 	CpBrowserMediaStream beLoaded.
@@ -36,7 +36,7 @@ SmCamera class >> beLoaded [
 ]
 
 { #category : #'web resources' }
-SmCamera class >> style [
+SmCameraComponent class >> style [
 
 	<webResource: #css>
 
@@ -168,7 +168,7 @@ SmCamera class >> style [
 ]
 
 { #category : #'web resources' }
-SmCamera class >> template [
+SmCameraComponent class >> template [
 
 	<webResource: #html>
 
@@ -191,7 +191,7 @@ SmCamera class >> template [
 ]
 
 { #category : #initialization }
-SmCamera >> addOrientationChangeHandler [
+SmCameraComponent >> addOrientationChangeHandler [
 
 	"Add event handler for device orientation.
 
@@ -237,14 +237,14 @@ SmCamera >> addOrientationChangeHandler [
 ]
 
 { #category : #initialization }
-SmCamera >> addVisibilityChangeHandler [
+SmCameraComponent >> addVisibilityChangeHandler [
 
 	visibilityChangeHandler := CpBrowserDocument current
 		addEventListener: #visibilitychange handler: [ self visibilityChanged ]
 ]
 
 { #category : #view }
-SmCamera >> attachVideo [
+SmCameraComponent >> attachVideo [
 
 	"Do not attach video if an image is captured"
 	self hasCaptured
@@ -257,19 +257,19 @@ SmCamera >> attachVideo [
 ]
 
 { #category : #accessing }
-SmCamera >> cameraButton [
+SmCameraComponent >> cameraButton [
 
 	^ self shadowedElementWithId: #button
 ]
 
 { #category : #accessing }
-SmCamera >> canvasElement [
+SmCameraComponent >> canvasElement [
 
 	^ CpBrowserCanvasElement domElement: (self shadowedElementWithId: #picture)
 ]
 
 { #category : #view }
-SmCamera >> detachVideo [
+SmCameraComponent >> detachVideo [
 
 	videoStream
 		ifNotNil: [
@@ -282,13 +282,13 @@ SmCamera >> detachVideo [
 ]
 
 { #category : #accessing }
-SmCamera >> flipButton [
+SmCameraComponent >> flipButton [
 
 	^ self shadowedElementWithId: #flip
 ]
 
 { #category : #actions }
-SmCamera >> flipImage [
+SmCameraComponent >> flipImage [
 
 	self toggleClass: #flipped.
 self traceCr: 'Yes'.
@@ -298,19 +298,19 @@ self traceCr: 'Yes'.
 ]
 
 { #category : #accessing }
-SmCamera >> flipStatus [
+SmCameraComponent >> flipStatus [
 
 	^ self shadowedElementWithId: #'flip-status'
 ]
 
 { #category : #testing }
-SmCamera >> hasCaptured [
+SmCameraComponent >> hasCaptured [
 
 	^ self isClassed: #captured
 ]
 
 { #category : #initialization }
-SmCamera >> initialize [
+SmCameraComponent >> initialize [
 
 	super initialize.
 
@@ -324,7 +324,7 @@ SmCamera >> initialize [
 ]
 
 { #category : #initialization }
-SmCamera >> initializeShadowRoot [
+SmCameraComponent >> initializeShadowRoot [
 
 	super initializeShadowRoot.
 self traceCr: 'here'.
@@ -347,13 +347,13 @@ self traceCr: 'here'.
 ]
 
 { #category : #accessing }
-SmCamera >> keepButton [
+SmCameraComponent >> keepButton [
 
 	^ self shadowedElementWithId: #keep
 ]
 
 { #category : #actions }
-SmCamera >> keepPicture [
+SmCameraComponent >> keepPicture [
 
 	"Keep the current picture, announcing its content"
 
@@ -362,7 +362,7 @@ SmCamera >> keepPicture [
 ]
 
 { #category : #'event handling' }
-SmCamera >> orientationChanged [
+SmCameraComponent >> orientationChanged [
 
 	"Add orientation attribute to the receiver to describe orientation
 	(to allow position updates in CSS).
@@ -382,7 +382,7 @@ SmCamera >> orientationChanged [
 ]
 
 { #category : #accessing }
-SmCamera >> orientationFromAngle: anInteger [
+SmCameraComponent >> orientationFromAngle: anInteger [
 
 	anInteger == 0
 		ifTrue: [ ^ #straight ].
@@ -401,7 +401,7 @@ SmCamera >> orientationFromAngle: anInteger [
 ]
 
 { #category : #initialization }
-SmCamera >> release [
+SmCameraComponent >> release [
 
 	self removeVisibilityChangeHandler.
 
@@ -409,20 +409,20 @@ SmCamera >> release [
 ]
 
 { #category : #initialization }
-SmCamera >> removeVisibilityChangeHandler [
+SmCameraComponent >> removeVisibilityChangeHandler [
 
 	CpBrowserDocument current
 		removeEventListener: visibilityChangeHandler
 ]
 
 { #category : #accessing }
-SmCamera >> retakeButton [
+SmCameraComponent >> retakeButton [
 
 	^ self shadowedElementWithId: #retake
 ]
 
 { #category : #actions }
-SmCamera >> retakePicture [
+SmCameraComponent >> retakePicture [
 
 	"Retake picture, so change state and start video"
 
@@ -432,13 +432,13 @@ SmCamera >> retakePicture [
 ]
 
 { #category : #accessing }
-SmCamera >> switchButton [
+SmCameraComponent >> switchButton [
 
 	^ self shadowedElementWithId: #switch
 ]
 
 { #category : #actions }
-SmCamera >> switchCamera [
+SmCameraComponent >> switchCamera [
 
 	"Swich between user facing and environment facing camera.
 	Stop and start video explicitly, otherwise it might remain in use."
@@ -455,7 +455,7 @@ SmCamera >> switchCamera [
 ]
 
 { #category : #actions }
-SmCamera >> takePicture [
+SmCameraComponent >> takePicture [
 
 	"Take picture from the videa stream.
 	Adjust size according to video source and update state."
@@ -480,13 +480,13 @@ SmCamera >> takePicture [
 ]
 
 { #category : #accessing }
-SmCamera >> videoElement [
+SmCameraComponent >> videoElement [
 
 	^ CpBrowserVideoElement domElement: (self shadowedElementWithId: #video)
 ]
 
 { #category : #accessing }
-SmCamera >> videoStream [
+SmCameraComponent >> videoStream [
 
 	"Answer the MediaStream (as a Promise) for the current facing mode (i.e. environment or user)"
 
@@ -500,7 +500,7 @@ SmCamera >> videoStream [
 ]
 
 { #category : #'event handling' }
-SmCamera >> visibilityChanged [
+SmCameraComponent >> visibilityChanged [
 
 	"Stop the video if the document is not longer visible"
 
@@ -510,7 +510,7 @@ SmCamera >> visibilityChanged [
 ]
 
 { #category : #accessing }
-SmCamera >> withVideoStreamDo: aBlock [
+SmCameraComponent >> withVideoStreamDo: aBlock [
 
 	"Perform an operation on the video stream"
 

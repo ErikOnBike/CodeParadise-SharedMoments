@@ -70,5 +70,5 @@ SmCameraButton >> initialize [
 	"Prepare audio element to play shutter sound"
 	audio := CpBrowserAudioElement url: self class shutterSoundDataURL.
 
-	self when: CpClickEvent primary only send: #clicked to: self
+	self when: CpClickEvent basicPrimary send: #clicked to: self
 ]
