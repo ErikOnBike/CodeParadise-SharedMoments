@@ -1,11 +1,11 @@
 Class {
-	#name : #SmSmallCameraView,
+	#name : #SmIconCameraView,
 	#superclass : #CpView,
 	#category : #'CodeParadise-SharedMoments-Dashboard-View'
 }
 
 { #category : #'web resources' }
-SmSmallCameraView class >> template [
+SmIconCameraView class >> template [
 
 	<webResource: #html>
 
@@ -15,13 +15,13 @@ SmSmallCameraView class >> template [
 ]
 
 { #category : #accessing }
-SmSmallCameraView >> avatar [
+SmIconCameraView >> avatar [
 
 	^ self shadowedElementWithId: #avatar
 ]
 
 { #category : #rendering }
-SmSmallCameraView >> initializeShadowRoot [
+SmIconCameraView >> initializeShadowRoot [
 
 	super initializeShadowRoot.
 
@@ -29,7 +29,7 @@ SmSmallCameraView >> initializeShadowRoot [
 ]
 
 { #category : #rendering }
-SmSmallCameraView >> renderInitials: aString [
+SmIconCameraView >> renderInitials: aString [
 
 	self attributeAt: #initials put: aString.
 
@@ -37,7 +37,7 @@ SmSmallCameraView >> renderInitials: aString [
 ]
 
 { #category : #rendering }
-SmSmallCameraView >> updateInitials [
+SmIconCameraView >> updateInitials [
 
 	self avatar initials: ((self attributeAt: #initials) ifNil: [ '?' ])
 ]

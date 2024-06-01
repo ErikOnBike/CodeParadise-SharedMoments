@@ -10,6 +10,32 @@ Class {
 	#category : #'CodeParadise-SharedMoments-Model'
 }
 
+{ #category : #support }
+SmModel class >> isFuture: anInteger [
+
+	"Answer whether the specified timestamp is in the future"
+
+	^ self timestampNow < anInteger
+]
+
+{ #category : #support }
+SmModel class >> randomToken [
+
+	"Answer a random token value (as a String).
+
+	Implementation:
+	Since currently the tiny image for CodeParadise does not support the Pharo UUID class,
+	use a different implementation for both, answering a String representation."
+
+	(Smalltalk classNamed: #UUID)
+		ifNotNil: [ :uuidClass | ^ uuidClass new printString ].
+
+	(Smalltalk classNamed: #CpNodeJSCrypto)
+		ifNotNil: [ :cryptoModule | ^ cryptoModule require randomUUID ].
+
+	self error: 'No UUID class available in the current environment'
+]
+
 { #category : #accessing }
 SmModel class >> removalPeriod [
 
@@ -53,6 +79,14 @@ SmModel class >> timestampStringFor: anInteger [
 		ifNotNil: [ :jsClass | ^ ((jsClass forName: #Date) newInstanceWithArguments: { anInteger * 1000 }) apply: #toISOString ].
 
 	self error: 'No Data or DateAndTime class available in the current environment'
+]
+
+{ #category : #accessing }
+SmModel class >> tokenPeriod [
+
+	"Answer the number of seconds after sending that a token is valid"
+
+	^ 259200 "3 days = 60 * 60 * 24 * 3"
 ]
 
 { #category : #accessing }

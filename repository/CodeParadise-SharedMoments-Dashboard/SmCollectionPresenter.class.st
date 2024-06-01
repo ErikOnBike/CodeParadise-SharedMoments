@@ -11,9 +11,9 @@ SmCollectionPresenter >> collection [
 ]
 
 { #category : #'event handling' }
-SmCollectionPresenter >> handleAddCamera [
+SmCollectionPresenter >> handleAddCameraInvite [
 
-	self collection addCamera
+	self collection addCameraInvite
 ]
 
 { #category : #'event handling' }
@@ -53,8 +53,8 @@ SmCollectionPresenter >> renderView [
 		renderPhotoCount: collection photoCount.
 
 	self
-		renderAllChildViewsForModels: collection cameras
-		usingPresenter: SmSmallCameraPresenter
+		renderAllChildViewsForModels: collection camerasAndInvites
+		usingPresenter: [ :each | each iconPresenterClass ]
 		atSlotNamed: #cameras.
 
 	self
@@ -70,7 +70,7 @@ SmCollectionPresenter >> viewCreated [
 
 	self view
 		when: (CpFieldChanged id: #name) send: #handleNameChanged: to: self ;
-		when: (CpActionRequested id: #addCamera) send: #handleAddCamera to: self ;
+		when: (CpActionRequested id: #addCameraInvite) send: #handleAddCameraInvite to: self ;
 		when: (CpActionRequested id: #addPhotoFrame) send: #handleAddPhotoFrame to: self ;
 		when: (CpActionRequested id: #delete) send: #handleDelete to: self ;
 		when: (CpActionRequested id: #undelete) send: #handleUndelete to: self 

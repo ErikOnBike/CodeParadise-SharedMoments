@@ -6,7 +6,8 @@ Class {
 		'name',
 		'cameras',
 		'photoFrames',
-		'photoCount'
+		'photoCount',
+		'invites'
 	],
 	#category : #'CodeParadise-SharedMoments-Model'
 }
@@ -31,15 +32,9 @@ SmCollection >> account: anAccount [
 ]
 
 { #category : #accessing }
-SmCollection >> addCamera [
+SmCollection >> addCameraInvite [
 
-	^ self addCamera: SmCamera new
-]
-
-{ #category : #accessing }
-SmCollection >> addCamera: aCamera [
-
-	^ cameras add: aCamera
+	^ invites add: (SmCameraInvite forCollection: self)
 ]
 
 { #category : #accessing }
@@ -55,9 +50,23 @@ SmCollection >> addPhotoFrame: aPhotoFrame [
 ]
 
 { #category : #accessing }
+SmCollection >> cameraInvites [
+
+	^ self invites select: [ :each | each class = SmCameraInvite ]
+]
+
+{ #category : #accessing }
 SmCollection >> cameras [
 
 	^ cameras value
+]
+
+{ #category : #accessing }
+SmCollection >> camerasAndInvites [
+
+	"Answer a collection of cameras and invites for cameras (in that order)"
+
+	^ self cameras, self cameraInvites
 ]
 
 { #category : #initialization }
@@ -69,7 +78,8 @@ SmCollection >> initialize [
 	name := SmValueHolder owner: self.
 	cameras := SmCollectionHolder owner: self.
 	photoFrames := SmCollectionHolder owner: self.
-	photoCount := SmValueHolder owner: self value: 0
+	photoCount := SmValueHolder owner: self value: 0.
+	invites := SmCollectionHolder owner: self
 ]
 
 { #category : #initialization }
@@ -78,6 +88,12 @@ SmCollection >> initializeWithName: aString [
 	self initialize.
 
 	name setValue: aString
+]
+
+{ #category : #accessing }
+SmCollection >> invites [
+
+	^ invites value
 ]
 
 { #category : #accessing }
@@ -102,16 +118,4 @@ SmCollection >> photoCount [
 SmCollection >> photoFrames [
 
 	^ photoFrames value
-]
-
-{ #category : #accessing }
-SmCollection >> removeCamera: aCamera [
-
-	^ cameras remove: aCamera
-]
-
-{ #category : #accessing }
-SmCollection >> removePhotoFrame: aPhotoFrame [
-
-	^ photoFrames remove: aPhotoFrame
 ]

@@ -88,12 +88,16 @@ SmCollectionView class >> style [
 		align-items: center;
 		column-gap: 4px;
 		height: 100%;
+		padding-right: 6px;
 		overflow-x: scroll;
 		-ms-overflow-style: none;
 		scrollbar-width: none;
 	}
 	.row .scrollable::-webkit-scrollbar {
 		display: none;
+	}
+	::slotted(sm-icon-camera-invite) {
+		cursor: pointer;
 	}
 	sl-icon,
 	sl-icon-button {
@@ -137,16 +141,16 @@ SmCollectionView class >> template [
 	</div>'
 ]
 
-{ #category : #'event handling' }
-SmCollectionView >> addCamera [
-
-	self serverAnnounce: (CpActionRequested id: #addCamera)
-]
-
 { #category : #accessing }
 SmCollectionView >> addCameraButton [
 
 	^ self shadowedElementWithId: #'add-camera'
+]
+
+{ #category : #'event handling' }
+SmCollectionView >> addCameraInvite [
+
+	self serverAnnounce: (CpActionRequested id: #addCameraInvite)
 ]
 
 { #category : #'event handling' }
@@ -159,6 +163,15 @@ SmCollectionView >> addPhotoFrame [
 SmCollectionView >> addPhotoFrameButton [
 
 	^ self shadowedElementWithId: #'add-photo-frame'
+]
+
+{ #category : #'adding/removing' }
+SmCollectionView >> appendChild: anElement atSlotNamed: aString [
+
+	aString = #cameras
+		ifTrue: [ anElement when: CpClickEvent basicPrimary send: #selectCamera: to: self ].
+
+	^ super appendChild: anElement atSlotNamed: aString
 ]
 
 { #category : #rendering }
@@ -199,7 +212,7 @@ SmCollectionView >> initializeShadowRoot [
 	super initializeShadowRoot.
 
 	self addCameraButton
-		when: CpClickEvent basicPrimary send: #addCamera to: self.
+		when: CpClickEvent basicPrimary send: #addCameraInvite to: self.
 
 	self addPhotoFrameButton
 		when: CpClickEvent basicPrimary send: #addPhotoFrame to: self.
@@ -271,6 +284,12 @@ SmCollectionView >> renderRemoval: aString [
 	self attributeAt: #removal put: aString.
 
 	self updateRemovalText
+]
+
+{ #category : #'event handling' }
+SmCollectionView >> selectCamera: aClickEvent [
+
+	self traceCr: aClickEvent printString
 ]
 
 { #category : #'event handling' }

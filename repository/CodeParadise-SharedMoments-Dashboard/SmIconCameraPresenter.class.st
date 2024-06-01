@@ -1,17 +1,17 @@
 Class {
-	#name : #SmSmallCameraPresenter,
+	#name : #SmIconCameraPresenter,
 	#superclass : #CpPresenter,
 	#category : #'CodeParadise-SharedMoments-Dashboard-Presenter'
 }
 
 { #category : #accessing }
-SmSmallCameraPresenter >> camera [
+SmIconCameraPresenter >> camera [
 
 	^ self model
 ]
 
 { #category : #rendering }
-SmSmallCameraPresenter >> renderView [
+SmIconCameraPresenter >> renderView [
 
 	self view renderInitials: self camera nameInitials
 ]

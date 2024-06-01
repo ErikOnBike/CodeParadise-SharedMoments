@@ -2,6 +2,7 @@ Class {
 	#name : #SmCamera,
 	#superclass : #SmModel,
 	#instVars : [
+		'collections',
 		'name'
 	],
 	#category : #'CodeParadise-SharedMoments-Model'
@@ -27,7 +28,10 @@ SmCamera >> initialize [
 
 	super initialize.
 
-	name := SmValueHolder owner: self
+	name := SmValueHolder owner: self.
+
+	"Collections are not user settable"
+	collections := Set new
 ]
 
 { #category : #initialization }
