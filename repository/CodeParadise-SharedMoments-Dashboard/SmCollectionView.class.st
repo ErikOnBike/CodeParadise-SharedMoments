@@ -20,11 +20,14 @@ SmCollectionView class >> style [
 	:host {
 		display: block;
 	}
+	#container {
+		position: relative;
+	}
 	#delete-status {
 		display: none;
 		position: absolute;
 		left: 50%;
-		transform: translate(-50%, -.4em);
+		transform: translate(-50%, -12px);
 		z-index: 2;
 	}
 	:host(.deleted) #delete-status {
@@ -108,7 +111,7 @@ SmCollectionView class >> template [
 	<webResource: #html>
 
 	^ '<div id="container">
-		<sl-tag id="delete-status" variant="warning" size="large" pill><span>Deleted (will be removed&nbsp;</span><sl-relative-time id="removal"></sl-relative-time><span>)</span></sl-tag>
+		<sl-tag id="delete-status" variant="danger" size="large" pill><span>Deleted (will be removed&nbsp;</span><sl-relative-time id="removal"></sl-relative-time><span>)</span></sl-tag>
 		<sl-card>
 			<div id="header" slot="header"><sl-icon name="collection"></sl-icon><span>Collection</span><slot name="name"></slot></div>
 			<div>

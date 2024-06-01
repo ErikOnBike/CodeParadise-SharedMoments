@@ -48,7 +48,7 @@ SmCollectionPresenter >> renderView [
 	collection := self collection.
 
 	self view
-		renderRemoval: collection removeTimestampString ;
+		renderRemoval: collection removalTimestampString ;
 		renderName: collection name ;
 		renderPhotoCount: collection photoCount.
 

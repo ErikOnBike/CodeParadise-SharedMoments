@@ -10,7 +10,7 @@ Class {
 	#category : #'CodeParadise-SharedMoments-Model'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : #accessing }
 SmModel class >> removalPeriod [
 
 	"Answer the number of seconds after deletion that a model will be removed"
@@ -33,6 +33,24 @@ SmModel class >> timestampNow [
 
 	(Smalltalk classNamed: #CpJavaScriptClass)
 		ifNotNil: [ :jsClass | ^ ((jsClass forName: #Date) apply: #now) // 1000 ].
+
+	self error: 'No Data or DateAndTime class available in the current environment'
+]
+
+{ #category : #support }
+SmModel class >> timestampStringFor: anInteger [
+
+	"Answer the specified timestamp (in seconds since Unix epoch) as an ISO-8601 string.
+
+	Implementation:
+	Since currently the tiny image for CodeParadise does not support any Date and Time classes,
+	use a different implementation per environment."
+
+	(Smalltalk classNamed: #DateAndTime)
+		ifNotNil: [ :dateAndTimeClass | ^ (dateAndTimeClass fromUnixTime: anInteger) printString ].
+
+	(Smalltalk classNamed: #CpJavaScriptClass)
+		ifNotNil: [ :jsClass | ^ ((jsClass forName: #Date) newInstanceWithArguments: { anInteger * 1000 }) apply: #toISOString ].
 
 	self error: 'No Data or DateAndTime class available in the current environment'
 ]
@@ -76,15 +94,14 @@ SmModel >> isDeleted [
 ]
 
 { #category : #accessing }
-SmModel >> removeTimestampString [
+SmModel >> removalTimestampString [
 
 	"Answer the timestamp of removal as a String (in ISO 8601 format)
 	or answer nil if the receiver has not been deleted"
 
 	deletedAt ifNil: [ ^ nil ].
 
-	self flag: #FIXME. "Add support for when run in REST server"
-	^ (DateAndTime fromUnixTime: deletedAt + SmModel removalPeriod) printString
+	^ SmModel timestampStringFor: deletedAt + SmModel removalPeriod
 ]
 
 { #category : #actions }
