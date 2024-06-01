@@ -2,7 +2,6 @@ Class {
 	#name : #SmCamera,
 	#superclass : #SmModel,
 	#instVars : [
-		'collection',
 		'name'
 	],
 	#category : #'CodeParadise-SharedMoments-Model'
@@ -16,23 +15,19 @@ SmCamera class >> newWithName: aString [
 		yourself
 ]
 
-{ #category : #private }
-SmCamera >> collection: aCollection [
+{ #category : #initialization }
+SmCamera >> initialize [
 
-	"Set the collection of the receiver.
+	"Initialize the receiver.
 
 	Implementation:
-	This is an internal method, do not announce a value changed."
+	The instance variable collection is only used as a reference
+	back to the SmCollection the receiver lives in. It should
+	therefore not be put in a ValueHolder."
 
-	collection := aCollection
-]
+	super initialize.
 
-{ #category : #actions }
-SmCamera >> delete [
-
-	collection ifNil: [ ^ self ].
-
-	collection removeCamera: self
+	name := SmValueHolder owner: self
 ]
 
 { #category : #initialization }
@@ -40,26 +35,26 @@ SmCamera >> initializeWithName: aString [
 
 	self initialize.
 
-	name := aString
+	name setValue: aString
 ]
 
 { #category : #accessing }
 SmCamera >> name [
 
-	^ name
+	^ name value
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #accessing }
 SmCamera >> nameInitials [
 
 	"Answer max 2 initials for the receiver's name"
 
 	| first letter |
 
-	name ifNil: [ ^ nil ].
+	self name ifNil: [ ^ nil ].
 
 	letter := false.
-	name do: [ :each |
+	self name do: [ :each |
 		each isLetter
 			ifTrue: [
 				letter ifFalse: [

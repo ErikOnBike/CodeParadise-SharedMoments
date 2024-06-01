@@ -4,6 +4,6 @@ Extension { #name : #SmCollection }
 SmCollection >> asDictionary [
 
 	^ {
-		#name -> name
+		#name -> self name
 	} asOrderedDictionary
 ]

@@ -4,6 +4,6 @@ Extension { #name : #SmCamera }
 SmCamera >> asDictionary [
 
 	^ {
-		#name -> name
+		#name -> self name
 	} asOrderedDictionary
 ]

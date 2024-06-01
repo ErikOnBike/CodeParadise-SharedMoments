@@ -20,8 +20,47 @@ SmCollectionView class >> style [
 	:host {
 		display: block;
 	}
+	#delete-status {
+		display: none;
+		position: absolute;
+		left: 50%;
+		transform: translate(-50%, -.4em);
+		z-index: 2;
+	}
+	:host(.deleted) #delete-status {
+		display: block;
+	}
 	sl-card {
+		position: relative;
 		width: 100%;
+	}
+	:host(.deleted) sl-card {
+		pointer-events: none;
+		user-select: none;
+		-webkit-user-select: none;
+	}
+	:host(.deleted) sl-card::after {
+		content: " ";
+		display: block;
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		border-radius: var(--sl-border-radius-medium);
+		background-color: white;
+		opacity: .7;
+	}
+	#undelete {
+		display: none;
+	}
+	:host(.deleted) #delete {
+		display: none;
+	}
+	:host(.deleted) #undelete {
+		pointer-events: auto;
+		display: inline-block;
+		z-index: 3;
 	}
 	#header,
 	#footer {
@@ -53,15 +92,6 @@ SmCollectionView class >> style [
 	.row .scrollable::-webkit-scrollbar {
 		display: none;
 	}
-	#delete-alert {
-		display: none;
-		color: red;
-	}
-	#delete-alert.show {
-		display: inline-flex;
-		align-items: center;
-		column-gap: 6px;
-	}
 	sl-icon,
 	sl-icon-button {
 		font-size: 1.6em;
@@ -78,6 +108,7 @@ SmCollectionView class >> template [
 	<webResource: #html>
 
 	^ '<div id="container">
+		<sl-tag id="delete-status" variant="warning" size="large" pill><span>Deleted (will be removed&nbsp;</span><sl-relative-time id="removal"></sl-relative-time><span>)</span></sl-tag>
 		<sl-card>
 			<div id="header" slot="header"><sl-icon name="collection"></sl-icon><span>Collection</span><slot name="name"></slot></div>
 			<div>
@@ -97,12 +128,7 @@ SmCollectionView class >> template [
 				</div>
 			</div>
 			<div id="footer" slot="footer">
-				<sl-switch id="enable-delete"></sl-switch>
-				<sl-button id="delete" variant="danger" disabled>Delete</sl-button>
-				<span id="delete-alert">
-					<sl-icon name="exclamation-triangle"></sl-icon>
-					<span id="delete-alert-text"></span>
-				</span>
+				<sl-button id="delete" variant="danger">Delete</sl-button><sl-button id="undelete" variant="primary">Undelete</sl-button>
 			</div>
 		</sl-card>
 	</div>'
@@ -149,33 +175,9 @@ SmCollectionView >> delete [
 ]
 
 { #category : #accessing }
-SmCollectionView >> deleteAlert [
-
-	^ self shadowedElementWithId: #'delete-alert'
-]
-
-{ #category : #accessing }
-SmCollectionView >> deleteAlertText [
-
-	^ self shadowedElementWithId: #'delete-alert-text'
-]
-
-{ #category : #accessing }
 SmCollectionView >> deleteButton [
 
 	^ self shadowedElementWithId: #delete
-]
-
-{ #category : #accessing }
-SmCollectionView >> enableDeleteSwitch [
-
-	^ self shadowedElementWithId: #'enable-delete'
-]
-
-{ #category : #rendering }
-SmCollectionView >> hideDeleteAlert [
-
-	self deleteAlert removeClass: #show
 ]
 
 { #category : #initialization }
@@ -202,14 +204,39 @@ SmCollectionView >> initializeShadowRoot [
 	self deleteButton
 		when: CpClickEvent basicPrimary send: #delete to: self.
 
-	self enableDeleteSwitch
-		when: SlChangeEvent send: #updateDeleteButton to: self
+	self undeleteButton
+		when: CpClickEvent basicPrimary send: #undelete to: self.
+
+	"Update the current state"
+	self updateRemovalText
+]
+
+{ #category : #accessing }
+SmCollectionView >> nameInput [
+
+	^ self firstChildAtSlotNamed: #name
 ]
 
 { #category : #accessing }
 SmCollectionView >> photoCount [
 
 	^ photoCount
+]
+
+{ #category : #accessing }
+SmCollectionView >> removalTimestampText [
+
+	^ self shadowedElementWithId: #removal
+]
+
+{ #category : #rendering }
+SmCollectionView >> renderDeleteStatus: aBoolean [
+
+	self classed: #deleted if: aBoolean.
+
+	self nameInput disabled: aBoolean.
+	self addCameraButton disabled: aBoolean.
+	self addPhotoFrameButton disabled: aBoolean
 ]
 
 { #category : #rendering }
@@ -230,26 +257,39 @@ SmCollectionView >> renderPhotoCount: anInteger [
 ]
 
 { #category : #rendering }
-SmCollectionView >> showDeleteAlert [
+SmCollectionView >> renderRemoval: aString [
 
-	self photoCount = 0
-		ifTrue: [ ^ self ].
+	"Render the removal timestamp (as specified as a String).
+	If the specified timestamp is nil, the receiver's model is
+	not deleted."
 
-	self deleteAlert addClass: #show.
+	self renderDeleteStatus: aString isNotNil.
 
-	self deleteAlertText textContent: self photoCount printString, ' photos will be deleted'
+	self attributeAt: #removal put: aString.
+
+	self updateRemovalText
 ]
 
 { #category : #'event handling' }
-SmCollectionView >> updateDeleteButton [
+SmCollectionView >> undelete [
 
-	| enableDelete |
+	self serverAnnounce: (CpActionRequested id: #undelete)
+]
 
-	enableDelete := self enableDeleteSwitch isChecked.
+{ #category : #accessing }
+SmCollectionView >> undeleteButton [
 
-	self deleteButton disabled: enableDelete not.
+	^ self shadowedElementWithId: #undelete
+]
 
-	enableDelete
-		ifTrue: [ self showDeleteAlert ]
-		ifFalse: [ self hideDeleteAlert ]
+{ #category : #rendering }
+SmCollectionView >> updateRemovalText [
+
+	"Set the text for the upcoming removal (if any) of the receiver's model"
+
+	| removalTimestamp |
+
+	removalTimestamp := self attributeAt: #removal.
+
+	self removalTimestampText attributeAt: #date put: removalTimestamp
 ]

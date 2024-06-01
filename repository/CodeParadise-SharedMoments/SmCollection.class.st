@@ -2,7 +2,6 @@ Class {
 	#name : #SmCollection,
 	#superclass : #SmModel,
 	#instVars : [
-		'createdAt',
 		'account',
 		'name',
 		'cameras',
@@ -28,7 +27,7 @@ SmCollection >> account: anAccount [
 	Implementation:
 	This is an internal method, do not announce a value changed."
 
-	account := anAccount
+	account setValue: anAccount
 ]
 
 { #category : #accessing }
@@ -40,13 +39,7 @@ SmCollection >> addCamera [
 { #category : #accessing }
 SmCollection >> addCamera: aCamera [
 
-	cameras add: aCamera.
-	self valueChanged.
-
-	"Set back link"
-	aCamera collection: self.
-
-	^ aCamera
+	^ cameras add: aCamera
 ]
 
 { #category : #accessing }
@@ -58,33 +51,13 @@ SmCollection >> addPhotoFrame [
 { #category : #accessing }
 SmCollection >> addPhotoFrame: aPhotoFrame [
 
-	photoFrames add: aPhotoFrame.
-	self valueChanged.
-
-	"Set back link"
-	aPhotoFrame collection: self.
-
-	^ aPhotoFrame
+	^ photoFrames add: aPhotoFrame
 ]
 
 { #category : #accessing }
 SmCollection >> cameras [
 
-	^ cameras
-]
-
-{ #category : #accessing }
-SmCollection >> createdAt [
-
-	^ createdAt
-]
-
-{ #category : #action }
-SmCollection >> delete [
-
-	account ifNil: [ ^ self ].
-
-	account removeCollection: self
+	^ cameras value
 ]
 
 { #category : #initialization }
@@ -92,10 +65,11 @@ SmCollection >> initialize [
 
 	super initialize.
 
-	createdAt := SmModel timestampNow.
-	cameras := OrderedCollection new.
-	photoFrames := OrderedCollection new.
-	photoCount := 0
+	account := SmValueHolder owner: self.
+	name := SmValueHolder owner: self.
+	cameras := SmCollectionHolder owner: self.
+	photoFrames := SmCollectionHolder owner: self.
+	photoCount := SmValueHolder owner: self value: 0
 ]
 
 { #category : #initialization }
@@ -103,55 +77,41 @@ SmCollection >> initializeWithName: aString [
 
 	self initialize.
 
-	name := aString
+	name setValue: aString
 ]
 
 { #category : #accessing }
 SmCollection >> name [
 
-	^ name
+	^ name value
 ]
 
 { #category : #accessing }
 SmCollection >> name: aString [
 
-	name := aString.
-
-	self valueChanged
+	name value: aString
 ]
 
 { #category : #accessing }
 SmCollection >> photoCount [
 
-	^ photoCount
+	^ photoCount value
 ]
 
 { #category : #accessing }
 SmCollection >> photoFrames [
 
-	^ photoFrames
+	^ photoFrames value
 ]
 
 { #category : #accessing }
 SmCollection >> removeCamera: aCamera [
 
-	cameras remove: aCamera.
-	self valueChanged.
-
-	"Remove back link"
-	aCamera collection: nil.
-
-	^ aCamera
+	^ cameras remove: aCamera
 ]
 
 { #category : #accessing }
 SmCollection >> removePhotoFrame: aPhotoFrame [
 
-	photoFrames remove: aPhotoFrame.
-	self valueChanged.
-
-	"Remove back link"
-	aPhotoFrame collection: nil.
-
-	^ aPhotoFrame
+	^ photoFrames remove: aPhotoFrame
 ]

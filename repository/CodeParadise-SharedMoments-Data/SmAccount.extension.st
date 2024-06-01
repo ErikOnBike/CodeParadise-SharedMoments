@@ -4,7 +4,7 @@ Extension { #name : #SmAccount }
 SmAccount >> asDictionary [
 
 	^ {
-		#email -> email
+		#email -> self email
 	} asOrderedDictionary
 ]
 

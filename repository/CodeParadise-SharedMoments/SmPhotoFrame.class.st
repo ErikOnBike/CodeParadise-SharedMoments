@@ -2,29 +2,24 @@ Class {
 	#name : #SmPhotoFrame,
 	#superclass : #SmModel,
 	#instVars : [
-		'collection',
 		'name'
 	],
 	#category : #'CodeParadise-SharedMoments-Model'
 }
 
-{ #category : #accessing }
-SmPhotoFrame >> collection: aCollection [
+{ #category : #initialization }
+SmPhotoFrame >> initialize [
 
-	"Set the collection of the receiver.
+	"Initialize the receiver.
 
 	Implementation:
-	This is an internal method, do not announce a value changed."
+	The instance variable collection is only used as a reference
+	back to the SmCollection the receiver lives in. It should
+	therefore not be put in a ValueHolder."
 
-	collection := aCollection
-]
+	super initialize.
 
-{ #category : #actions }
-SmPhotoFrame >> delete [
-
-	collection ifNil: [ ^ self ].
-
-	collection removePhotoFrame: self
+	name := SmValueHolder owner: self
 ]
 
 { #category : #initialization }
@@ -32,11 +27,11 @@ SmPhotoFrame >> initializeWithName: aString [
 
 	self initialize.
 
-	name := aString
+	name setValue: aString
 ]
 
 { #category : #accessing }
 SmPhotoFrame >> name [
 
-	^ name
+	^ name value
 ]

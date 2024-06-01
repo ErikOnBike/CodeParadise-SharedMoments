@@ -5,12 +5,6 @@ Class {
 }
 
 { #category : #accessing }
-SmCollectionPresenter >> cameras [
-
-	^ self collection cameras
-]
-
-{ #category : #accessing }
 SmCollectionPresenter >> collection [
 
 	^ self model
@@ -40,26 +34,31 @@ SmCollectionPresenter >> handleNameChanged: aFieldChanged [
 	self collection name: aFieldChanged value
 ]
 
-{ #category : #accessing }
-SmCollectionPresenter >> photoFrames [
+{ #category : #'event handling' }
+SmCollectionPresenter >> handleUndelete [
 
-	^ self collection photoFrames
+	self collection undelete
 ]
 
 { #category : #rendering }
 SmCollectionPresenter >> renderView [
 
+	| collection |
+
+	collection := self collection.
+
 	self view
-		renderName: self collection name ;
-		renderPhotoCount: self collection photoCount.
+		renderRemoval: collection removeTimestampString ;
+		renderName: collection name ;
+		renderPhotoCount: collection photoCount.
 
 	self
-		renderAllChildViewsForModels: self cameras
+		renderAllChildViewsForModels: collection cameras
 		usingPresenter: SmSmallCameraPresenter
 		atSlotNamed: #cameras.
 
 	self
-		renderAllChildViewsForModels: self photoFrames
+		renderAllChildViewsForModels: collection photoFrames
 		usingPresenter: SmSmallPhotoFramePresenter
 		atSlotNamed: #'photo-frames'
 ]
@@ -73,5 +72,6 @@ SmCollectionPresenter >> viewCreated [
 		when: (CpFieldChanged id: #name) send: #handleNameChanged: to: self ;
 		when: (CpActionRequested id: #addCamera) send: #handleAddCamera to: self ;
 		when: (CpActionRequested id: #addPhotoFrame) send: #handleAddPhotoFrame to: self ;
-		when: (CpActionRequested id: #delete) send: #handleDelete to: self
+		when: (CpActionRequested id: #delete) send: #handleDelete to: self ;
+		when: (CpActionRequested id: #undelete) send: #handleUndelete to: self 
 ]

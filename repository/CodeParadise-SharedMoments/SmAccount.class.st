@@ -55,21 +55,22 @@ SmAccount >> addCollection: aCollection [
 { #category : #accessing }
 SmAccount >> collections [
 
-	^ collections
+	^ collections value
 ]
 
 { #category : #accessing }
 SmAccount >> email [
 
-	^ email
+	^ email value
 ]
 
 { #category : #initialization }
 SmAccount >> initialize [
 
 	super initialize.
-	
-	collections := OrderedCollection new
+
+	email := SmValueHolder owner: self.
+	collections := SmCollectionHolder owner: self
 ]
 
 { #category : #initialization }
@@ -77,7 +78,7 @@ SmAccount >> initializeWithEmail: aString [
 
 	self initialize.
 
-	email := aString
+	email setValue: aString
 ]
 
 { #category : #accessing }

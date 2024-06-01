@@ -4,6 +4,6 @@ Extension { #name : #SmPhotoFrame }
 SmPhotoFrame >> asDictionary [
 
 	^ {
-		#name -> name
+		#name -> self name
 	} asOrderedDictionary
 ]

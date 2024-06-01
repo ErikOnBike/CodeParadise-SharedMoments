@@ -9,12 +9,14 @@ SmDashboardApplicationView class >> beLoaded [
 
 	SlAlert beLoaded.
 	SlAvatar beLoaded.
+	SlBadge beLoaded.
 	SlButton beLoaded.
 	SlCard beLoaded.
 	SlDivider beLoaded.
 	SlIcon beLoaded.
 	SlIconButton beLoaded.
 	SlInput beLoaded.
+	SlRelativeTime beLoaded.
 	SlSwitch beLoaded.
 	SlTag beLoaded.
 	SlTooltip beLoaded
