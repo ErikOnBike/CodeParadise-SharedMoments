@@ -21,7 +21,15 @@ SmCollectionView class >> style [
 		display: block;
 	}
 	#container {
+		display: flex;
+		flex-wrap: none;
 		position: relative;
+		overflow: hidden;
+	}
+	#first,
+	#second {
+		flex-shrink: 0;
+		width: 100%;
 	}
 	#delete-status {
 		display: none;
@@ -115,29 +123,33 @@ SmCollectionView class >> template [
 	<webResource: #html>
 
 	^ '<div id="container">
-		<sl-tag id="delete-status" variant="danger" size="large" pill><span>Deleted (will be removed&nbsp;</span><sl-relative-time id="removal"></sl-relative-time><span>)</span></sl-tag>
-		<sl-card>
-			<div id="header" slot="header"><sl-icon name="collection"></sl-icon><span>Collection</span><slot name="name"></slot></div>
-			<div>
-				<div id="cameras" class="row">
-					<sl-tooltip content="Connected cameras" placement="right"><sl-icon name="camera"></sl-icon></sl-tooltip>
-					<div class="scrollable"><slot name="cameras"></slot></div>
-					<sl-icon-button id="add-camera" name="plus-circle-dotted"></sl-icon-button>
+		<div id="first">
+			<sl-tag id="delete-status" variant="danger" size="large" pill><span>Deleted (will be removed&nbsp;</span><sl-relative-time id="removal"></sl-relative-time><span>)</span></sl-tag>
+			<sl-card>
+				<div id="header" slot="header"><sl-icon name="collection"></sl-icon><span>Collection</span><slot name="name"></slot></div>
+				<div>
+					<div id="cameras" class="row">
+						<sl-tooltip content="Connected cameras" placement="right"><sl-icon name="camera"></sl-icon></sl-tooltip>
+						<div class="scrollable"><slot name="cameras"></slot></div>
+						<sl-icon-button id="add-camera" name="plus-circle"></sl-icon-button>
+					</div>
+					<div id="photo-frames" class="row">
+						<sl-tooltip content="Connected photo frames" placement="right"><sl-icon name="display"></sl-icon></sl-tooltip>
+						<div class="scrollable"><slot name="photo-frames"></slot></div>
+						<sl-icon-button id="add-photo-frame" name="plus-circle"></sl-icon-button>
+					</div>
+					<div id="photos" class="row">
+						<sl-tooltip content="Photos uploaded" placement="right"><sl-icon name="images"></sl-icon></sl-tooltip>
+						<slot name="photos"></slot>
+					</div>
 				</div>
-				<div id="photo-frames" class="row">
-					<sl-tooltip content="Connected photo frames" placement="right"><sl-icon name="display"></sl-icon></sl-tooltip>
-					<div class="scrollable"><slot name="photo-frames"></slot></div>
-					<sl-icon-button id="add-photo-frame" name="plus-circle-dotted"></sl-icon-button>
+				<div id="footer" slot="footer">
+					<sl-button id="delete" variant="danger">Delete</sl-button><sl-button id="undelete" variant="primary">Undelete</sl-button>
 				</div>
-				<div id="photos" class="row">
-					<sl-tooltip content="Photos uploaded" placement="right"><sl-icon name="images"></sl-icon></sl-tooltip>
-					<slot name="photos"></slot>
-				</div>
-			</div>
-			<div id="footer" slot="footer">
-				<sl-button id="delete" variant="danger">Delete</sl-button><sl-button id="undelete" variant="primary">Undelete</sl-button>
-			</div>
-		</sl-card>
+			</sl-card>
+		</div><div id="second">
+			<slot name="secondary">Hello</slot>
+		</div>
 	</div>'
 ]
 
@@ -169,9 +181,35 @@ SmCollectionView >> addPhotoFrameButton [
 SmCollectionView >> appendChild: anElement atSlotNamed: aString [
 
 	aString = #cameras
-		ifTrue: [ anElement when: CpClickEvent basicPrimary send: #selectCamera: to: self ].
+		ifTrue: [ anElement when: CpClickEvent basicPrimary send: #selectSecondary: to: self ].
 
 	^ super appendChild: anElement atSlotNamed: aString
+]
+
+{ #category : #rendering }
+SmCollectionView >> closeSecondaryView [
+
+	"Hide the secondary view by transitioning it out of visible range.
+	Perform the specified Block once the secondary view is invisible."
+
+	| container scrollPos |
+
+	container := self container.
+	scrollPos := container propertyAt: #scrollLeft.
+
+	scrollPos > 0
+		ifTrue: [
+			(CpTransition onBlock: [ :p | container propertyAt: #scrollLeft put: ((1 - p) * scrollPos) ])
+				when: CpTransitionEnded send: #closeSecondaryView to: self ;
+				duration: 300 ;
+				start ]
+		ifFalse: [ self serverAnnounce: (CpActionRequested id: #closeSecondaryView) ]
+]
+
+{ #category : #accessing }
+SmCollectionView >> container [
+
+	^ self shadowedElementWithId: #container
 ]
 
 { #category : #rendering }
@@ -287,9 +325,27 @@ SmCollectionView >> renderRemoval: aString [
 ]
 
 { #category : #'event handling' }
-SmCollectionView >> selectCamera: aClickEvent [
+SmCollectionView >> selectSecondary: aClickEvent [
 
-	self traceCr: aClickEvent printString
+	aClickEvent target id
+		ifNotNil: [ :id | self serverAnnounce: (CpActionRequested id: #selectSecondary parameter: id) ]
+]
+
+{ #category : #rendering }
+SmCollectionView >> showSecondaryView [
+
+	"Show the secondary view by transitioning to it"
+
+	| container scrollMax scrollPos scrollDistance |
+
+	container := self container.
+	scrollMax := container propertyAt: #clientWidth.
+	scrollPos := container propertyAt: #scrollLeft.
+	scrollDistance := scrollMax - scrollPos.
+
+	(CpTransition onBlock: [ :p | container propertyAt: #scrollLeft put: scrollPos + (p * scrollDistance) ])
+		duration: 300 ;
+		start
 ]
 
 { #category : #'event handling' }

@@ -25,7 +25,8 @@ SmAccountPresenter >> collections [
 { #category : #rendering }
 SmAccountPresenter >> renderView [
 
-	self view renderEmail: self account email.
+	self view
+		renderEmail: self account email.
 
 	self renderAllChildViewsForModels: self collections atSlotNamed: #collections
 ]

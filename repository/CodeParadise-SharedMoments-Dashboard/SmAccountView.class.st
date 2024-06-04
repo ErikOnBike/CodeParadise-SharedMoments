@@ -16,7 +16,7 @@ SmAccountView class >> style [
 	}
 	#container {
 		display: flex;
-		height: 100%;
+		min-height: 100%;
 		flex-direction: column;
 		justify-content: center;
 		align-items: center;
@@ -48,7 +48,7 @@ SmAccountView class >> template [
 	^ '<div id="container">
 		<div id="info"><span>Dashboard for </span><slot name="email"></slot></div>
 		<div id="collections"><slot name="collections"></slot></div>
-		<div id="add-collection"><sl-icon-button id="add-collection-button" name="plus-circle-dotted"></sl-icon-button></div>
+		<div id="add-collection"><sl-icon-button id="add-collection-button" name="plus-circle"></sl-icon-button></div>
 	</div>'
 ]
 

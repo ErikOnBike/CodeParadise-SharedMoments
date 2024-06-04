@@ -13,5 +13,6 @@ SmSmallPhotoFramePresenter >> photoFrame [
 { #category : #rendering }
 SmSmallPhotoFramePresenter >> renderView [
 
-	self view renderName: self photoFrame name
+	self view
+		renderName: self photoFrame name
 ]

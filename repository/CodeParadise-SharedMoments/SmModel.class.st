@@ -113,11 +113,18 @@ SmModel >> deletedAt [
 	^ deletedAt
 ]
 
+{ #category : #accessing }
+SmModel >> id [
+
+	^ id
+]
+
 { #category : #initialization }
 SmModel >> initialize [
 
 	super initialize.
 
+	id := self class allInstances size + 1.
 	createdAt := SmModel timestampNow
 ]
 

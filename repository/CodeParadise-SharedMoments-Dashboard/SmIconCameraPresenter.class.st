@@ -13,5 +13,6 @@ SmIconCameraPresenter >> camera [
 { #category : #rendering }
 SmIconCameraPresenter >> renderView [
 
-	self view renderInitials: self camera nameInitials
+	self view
+		renderInitials: self camera nameInitials
 ]
