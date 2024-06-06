@@ -14,9 +14,6 @@ SmIconCameraInviteView class >> style [
 		-webkit-box-sizing: border-box;
 		box-sizing: border-box;
 	}
-	:host {
-		overflow: display;
-	}
 	#container {
 		position: relative;
 		overflow: display;
@@ -34,14 +31,8 @@ SmIconCameraInviteView class >> template [
 	<webResource: #html>
 
 	^ '<div id="container">
-		<sl-avatar id="avatar" shape="rounded"><sl-icon id="icon"></sl-icon></sl-avatar><sl-badge id="count" variant="primary" pill></sl-badge>
+		<sl-avatar id="avatar" shape="rounded"><sl-icon id="icon" slot="icon"></sl-icon></sl-avatar>
 	</div>'
-]
-
-{ #category : #accessing }
-SmIconCameraInviteView >> acceptCount [
-
-	^ self shadowedElementWithId: #count
 ]
 
 { #category : #accessing }
@@ -51,21 +42,25 @@ SmIconCameraInviteView >> avatarIcon [
 ]
 
 { #category : #accessing }
-SmIconCameraInviteView >> iconForStatus: aSymbol [
+SmIconCameraInviteView >> iconForStatus: aString [
 
-	aSymbol == #empty
+	"Since the status is stored in an attribute, it is a String"
+
+	aString ifNil: [ ^ #asterisk ].
+
+	aString = #empty
 		ifTrue: [ ^ #pencil ].
 
-	aSymbol == #unsent
+	aString = #unsent
 		ifTrue: [ ^ #send ].
 
-	aSymbol == #sent
+	aString = #sent
 		ifTrue: [ ^ #'hour-glass-split' ].
 
-	aSymbol == #expired
+	aString = #expired
 		ifTrue: [ ^ #alarm ].
 
-	aSymbol == #accepted
+	aString = #accepted
 		ifTrue: [ ^ #'check-lg' ].
 
 	^ #'exclamation-triangle'
@@ -76,17 +71,7 @@ SmIconCameraInviteView >> initializeShadowRoot [
 
 	super initializeShadowRoot.
 
-	self
-		updateStatus ;
-		updateAcceptCount
-]
-
-{ #category : #rendering }
-SmIconCameraInviteView >> renderAcceptCount: anInteger [
-
-	self attributeAt: #accepted put: anInteger printString.
-
-	self updateAcceptCount
+	self updateStatus
 ]
 
 { #category : #rendering }
@@ -95,16 +80,6 @@ SmIconCameraInviteView >> renderStatus: aSymbol [
 	self attributeAt: #status put: aSymbol.
 
 	self updateStatus
-]
-
-{ #category : #rendering }
-SmIconCameraInviteView >> updateAcceptCount [
-
-	| count |
-
-	count := self attributeAt: #accepted.
-
-	self acceptCount textContent: count
 ]
 
 { #category : #validation }

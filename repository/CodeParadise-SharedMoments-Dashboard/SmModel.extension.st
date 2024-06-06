@@ -10,6 +10,8 @@ SmModel >> preferredPresenterClass [
 	Otherwise an error is raised to make clear a presenter class should be implemented
 	or a subclass should override this method to answer a specific presenter class."
 
+	<serverEnvironment>
+
 	| className presenterClass |
 
 	className := (self class name withoutSuffix: #Model) asSymbol , #Presenter.

@@ -13,11 +13,6 @@ SmIconCameraInvitePresenter >> cameraInvite [
 { #category : #rendering }
 SmIconCameraInvitePresenter >> renderView [
 
-	| cameraInvite |
-
-	cameraInvite := self cameraInvite.
-
 	self view
-		renderStatus: cameraInvite status ;
-		renderAcceptCount: cameraInvite acceptCount
+		renderStatus: self cameraInvite status
 ]

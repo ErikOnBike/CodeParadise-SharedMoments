@@ -26,6 +26,12 @@ SmCameraInvite >> acceptCount [
 	^ acceptCount
 ]
 
+{ #category : #accessing }
+SmCameraInvite >> collection [
+
+	^ collection
+]
+
 { #category : #testing }
 SmCameraInvite >> hasInvitee [
 
