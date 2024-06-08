@@ -11,7 +11,7 @@ Class {
 { #category : #'instance creation' }
 SmValueHolder class >> new [
 
-	self error: 'The ValueHolder should be instantiated using ', #owner:
+	self errorNewReplacedBy: #owner:
 ]
 
 { #category : #accessing }
