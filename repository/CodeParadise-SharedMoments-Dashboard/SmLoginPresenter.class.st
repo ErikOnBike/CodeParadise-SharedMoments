@@ -9,7 +9,7 @@ SmLoginPresenter >> login: anActionRequested [
 
 	| credentials account |
 
-	credentials := anActionRequested parameters.
+	credentials := SmCredentials fromDictionary: anActionRequested parameters.
 
 	account := SmAccount forCredentials: credentials.
 

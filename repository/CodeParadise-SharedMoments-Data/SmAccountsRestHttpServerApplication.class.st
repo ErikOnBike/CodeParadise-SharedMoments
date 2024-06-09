@@ -13,7 +13,11 @@ SmAccountsRestHttpServerApplication class >> allowedPackages [
 
 	See comment in superclass."
 
-	^ super allowedPackages, { SmAccount package . CpNodeJSHttpServer package . CpNodeJSRestHttpServer package }
+	^ super allowedPackages, {
+		SmAccount package .
+		CpNodeJSHttpServer package .
+		CpNodeJSRestHttpServer package .
+		CpNodeJSSqlite3Database package }
 ]
 
 { #category : #accessing }
@@ -29,6 +33,5 @@ SmAccountsRestHttpServerApplication >> load [
 
 	self
 		installRequiredClass: CpNodeJSRestHttpServerStarter ;
-		installClass: ValueChanged ; "Special case"
-		installRequiredClass: SmAccount
+		installRequiredClass: SmRestApiService
 ]

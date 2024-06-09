@@ -2,6 +2,7 @@ Class {
 	#name : #SmModel,
 	#superclass : #CpBaseModel,
 	#instVars : [
+		'primId',
 		'id',
 		'createdAt',
 		'updatedAt',
@@ -132,6 +133,18 @@ SmModel >> initialize [
 SmModel >> isDeleted [
 
 	^ deletedAt isNotNil
+]
+
+{ #category : #testing }
+SmModel >> isNew [
+
+	"Answer whether the receiver is new.
+
+	Implementation:
+	if the receiver has not set its primary id, it is assumed to be a new instance
+	which has not been stored yet. The primary id is provided by the database."
+
+	^ primId isNil
 ]
 
 { #category : #accessing }
