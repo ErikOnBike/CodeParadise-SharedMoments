@@ -17,7 +17,8 @@ SmAccountsRestHttpServerApplication class >> allowedPackages [
 		SmAccount package .
 		CpNodeJSHttpServer package .
 		CpNodeJSRestHttpServer package .
-		CpNodeJSSqlite3Database package }
+		CpNodeJSSqlite3Database package .
+		CpNodeJSCrypto package }
 ]
 
 { #category : #accessing }
