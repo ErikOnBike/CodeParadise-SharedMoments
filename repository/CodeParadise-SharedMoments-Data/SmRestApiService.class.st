@@ -48,6 +48,12 @@ SmRestApiService >> errorInvalidLogin [
 ]
 
 { #category : #errors }
+SmRestApiService >> errorMissingInput: aString [
+
+	self error: 'Missing field in REST request: ', aString
+]
+
+{ #category : #errors }
 SmRestApiService >> errorNoBody [
 
 	self error: 'No body present in REST request'
@@ -68,16 +74,23 @@ SmRestApiService >> login: aRestRequest response: aServerResponse [
 	| body account |
 
 	body := (aRestRequest jsonBody) ifNil: [ self errorNoBody ].
+	self validateBody: body expectFields: #(#email #password).
 
+	"Read account"
 	account := self
 		selectOne: #getAccount
 		statement: 'SELECT id, name, password FROM accounts WHERE email=:email'
 		bind: {
-			#email -> body at: #email } asDictionary.
+			#email -> (body at: #email) } asDictionary.
 
 	account ifNil: [ self errorInvalidLogin ].
 
-	self class matchPassword: (body at: #password) withHash: (account at: #password)
+	"Validate password"
+	(self class matchPassword: (body at: #password) withHash: (account at: #password))
+		ifFalse: [ self errorInvalidLogin ].
+
+	"Create session"
+	self traceCr: 'Create session'
 ]
 
 { #category : #database }
@@ -96,4 +109,16 @@ SmRestApiService >> selectOne: aSymbol statement: aString bind: aDictionary [
 	^ rows
 		ifNotEmpty: [ rows first ]
 		ifEmpty: [ nil ]
+]
+
+{ #category : #validating }
+SmRestApiService >> validateBody: body expectFields: aCollection [
+
+	| missingFields |
+
+	missingFields := aCollection select: [ :each |
+		(body includesKey: each) not ].
+
+	missingFields
+		ifNotEmpty: [ self errorMissingInput: (', ' join: missingFields) ]
 ]
