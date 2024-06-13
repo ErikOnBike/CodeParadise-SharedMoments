@@ -11,7 +11,7 @@ SmLoginPresenter >> login: anActionRequested [
 
 	credentials := SmCredentials fromDictionary: anActionRequested parameters.
 
-	account := SmAccount forCredentials: credentials.
+	account := SmAccount withCredentials: credentials.
 
 	account ifNil: [
 		self view renderFailedLogin.
