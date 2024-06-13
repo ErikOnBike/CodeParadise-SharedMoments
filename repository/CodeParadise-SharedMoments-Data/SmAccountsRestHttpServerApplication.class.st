@@ -14,7 +14,6 @@ SmAccountsRestHttpServerApplication class >> allowedPackages [
 	See comment in superclass."
 
 	^ super allowedPackages, {
-		SmAccount package .
 		CpNodeJSHttpServer package .
 		CpNodeJSRestHttpServer package .
 		CpNodeJSSqlite3Database package .
