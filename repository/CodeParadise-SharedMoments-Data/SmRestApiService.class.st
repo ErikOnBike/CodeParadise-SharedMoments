@@ -171,7 +171,7 @@ SmRestApiService >> createSession: accountId response: aServerResponse [
 
 	self
 		insert: #createSession
-		statement: 'INSERT INTO sessions (id, createdAt, accountId, accessToken) VALUES(:createdAt, :accountId, :accessToken)'
+		statement: 'INSERT INTO sessions (id, createdAt, accountId, accessToken) VALUES(:id, :createdAt, :accountId, :accessToken)'
 		bind: {
 			#id -> id.
 			#createdAt -> createdAt.
@@ -183,7 +183,8 @@ SmRestApiService >> createSession: accountId response: aServerResponse [
 		send: {
 			#id -> id.
 			#createdAt -> createdAt.
-			#accessToken -> accessToken } asOrderedDictionary
+			#accessToken -> accessToken.
+			#accountId -> accountId } asOrderedDictionary
 		response: aServerResponse
 ]
 
