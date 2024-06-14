@@ -140,7 +140,18 @@ SmModel >> asDictionary [
 	dictionary := Dictionary new.
 
 	self publicInstVarNames do: [ :each |
-		dictionary at: each put: (self instVarNamed: each) ].
+		| value |
+		value := self publicInstVarNamed: each.
+		value class == SmValueHolder
+			ifTrue: [ value := value value ]
+			ifFalse: [
+				value class == SmCollectionHolder
+					ifTrue: [
+						value := value collect: [ :element |
+							(element isKindOf: SmModel)
+								ifTrue: [ element asDictionary ]
+								ifFalse: [ element ] ] ] ].
+		dictionary at: each put: value ].
 
 	^ dictionary
 ]
@@ -201,15 +212,6 @@ SmModel >> id [
 	^ id
 ]
 
-{ #category : #initialization }
-SmModel >> initialize [
-
-	super initialize.
-
-	id := self class allInstances size + 1.
-	createdAt := SmModel timestampNow
-]
-
 { #category : #testing }
 SmModel >> isDeleted [
 
@@ -219,13 +221,7 @@ SmModel >> isDeleted [
 { #category : #testing }
 SmModel >> isNew [
 
-	"Answer whether the receiver is new.
-
-	Implementation:
-	if the receiver has not set its primary id, it is assumed to be a new instance
-	which has not been stored yet. The primary id is provided by the database."
-
-	^ primId isNil
+	^ id isNil
 ]
 
 { #category : #presenters }
