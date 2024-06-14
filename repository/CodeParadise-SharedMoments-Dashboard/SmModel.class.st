@@ -16,6 +16,14 @@ SmModel class >> basePath [
 	^ 'http://localhost:8181'
 ]
 
+{ #category : #API }
+SmModel class >> forId: aString [
+
+	^ self fromDictionary: (self
+		get: self retrievePath
+		withParameters: { #id -> aString } asDictionary)
+]
+
 { #category : #'instance creation' }
 SmModel class >> fromDictionary: aDictionary [
 
@@ -91,6 +99,12 @@ SmModel class >> removalPeriod [
 	"Answer the number of seconds after deletion that a model will be removed"
 
 	^ 259200 "3 days = 60 * 60 * 24 * 3"
+]
+
+{ #category : #API }
+SmModel class >> retrievePath [
+
+	^ '/api/v1/', self nameWithoutPrefix asKebabCase, '/:id'
 ]
 
 { #category : #support }
