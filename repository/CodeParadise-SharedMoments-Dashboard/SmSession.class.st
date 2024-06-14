@@ -9,40 +9,23 @@ Class {
 }
 
 { #category : #accessing }
-SmSession class >> withCredentials: aDictionary [
+SmSession class >> withCredentials: aCredentials [
 
 	"Answer a new instance of the receiver using the specified credentials"
 
-	| email password |
-
-	"Validate input"
-	email := aDictionary at: #email ifAbsent: [ nil ].
-	password := aDictionary at: #password ifAbsent: [ nil ].
-	(email isEmptyOrNil or: [ password isEmptyOrNil ])
-		ifTrue: [
-			"Signal failed login"
-			^ nil ].
-
-	^ self fromDictionary: (self post: '/api/v1/login' body: aDictionary)
+	^ self fromDictionary: (self post: '/api/v1/login' body: aCredentials asDictionary)
 ]
 
 { #category : #accessing }
-SmSession class >> withCredentials: aDictionary do: aBlock [
+SmSession >> accessToken [
 
-	"Login using the specified credentials and evaluate the specified block using the matching account"
+	^ accessToken
+]
 
-	| email password |
+{ #category : #accessing }
+SmSession >> accountId [
 
-	"Validate input"
-	email := aDictionary at: #email ifAbsent: [ nil ].
-	password := aDictionary at: #password ifAbsent: [ nil ].
-	(email isEmptyOrNil or: [ password isEmptyOrNil ])
-		ifTrue: [
-			"Signal failed login"
-			aBlock value: nil.
-			^ self ].
-
-	^ self fromDictionary: (self post: '/api/v1/login' body: aDictionary)
+	^ accountId
 ]
 
 { #category : #initialization }

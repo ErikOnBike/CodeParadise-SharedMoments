@@ -4,20 +4,17 @@ Class {
 	#category : #'CodeParadise-SharedMoments-Dashboard-Presenter'
 }
 
+{ #category : #accessing }
+SmLoginPresenter >> dashboard [
+
+	^ self model
+]
+
 { #category : #'event handling' }
 SmLoginPresenter >> login: anActionRequested [
 
-	| credentials account |
-
-	credentials := SmCredentials fromDictionary: anActionRequested parameters.
-
-	account := SmAccount withCredentials: credentials.
-
-	account ifNil: [
-		self view renderFailedLogin.
-		^ self ].
-
-	self model account: account
+	(self dashboard login: anActionRequested parameters)
+		ifFalse: [ self view renderFailedLogin ]
 ]
 
 { #category : #view }

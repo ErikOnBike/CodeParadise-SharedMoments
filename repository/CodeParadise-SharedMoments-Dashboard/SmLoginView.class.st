@@ -95,7 +95,7 @@ SmLoginView >> login [
 		#email -> email.
 		#password -> password
 	} asDictionary.
-
+self traceCr: 'login!'.
 	self serverAnnounce: (CpActionRequested id: #login parameters: credentials)
 ]
 

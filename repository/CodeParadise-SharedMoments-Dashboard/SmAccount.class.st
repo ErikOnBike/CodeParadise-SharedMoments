@@ -11,20 +11,6 @@ Class {
 }
 
 { #category : #accessing }
-SmAccount class >> withCredentials: aDictionary [
-
-	"Login using the specified credentials and evaluate the specified block using the matching account"
-
-	| session |
-
-	session := SmSession withCredentials: aDictionary.
-
-	session inspect.
-
-	^ nil
-]
-
-{ #category : #accessing }
 SmAccount >> addCollection [
 
 	"Add a new (empty) Collection to the receiver"
