@@ -38,7 +38,7 @@ SmCameraInvite >> hasInvitee [
 	^ self invitee isEmptyOrNil not
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #presenter }
 SmCameraInvite >> iconPresenterClass [
 
 	<serverEnvironment>

@@ -2,7 +2,6 @@ Class {
 	#name : #SmModel,
 	#superclass : #CpBaseModel,
 	#instVars : [
-		'primId',
 		'id',
 		'createdAt',
 		'updatedAt',
@@ -229,7 +228,7 @@ SmModel >> isNew [
 	^ primId isNil
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #presenters }
 SmModel >> preferredPresenterClass [
 
 	"Answer the preferred Presenter class for the receiver (in its current state).

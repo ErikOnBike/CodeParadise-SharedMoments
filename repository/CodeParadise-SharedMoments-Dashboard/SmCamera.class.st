@@ -16,7 +16,7 @@ SmCamera class >> newWithName: aString [
 		yourself
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #presenter }
 SmCamera >> iconPresenterClass [
 
 	<serverEnvironment>
