@@ -10,6 +10,12 @@ Class {
 	#category : #'CodeParadise-SharedMoments-Dashboard-Model'
 }
 
+{ #category : #API }
+SmModel class >> basePath [
+
+	^ 'http://localhost:8181'
+]
+
 { #category : #'instance creation' }
 SmModel class >> fromDictionary: aDictionary [
 
@@ -27,12 +33,13 @@ SmModel class >> get: aString withParameters: aDictionary [
 
 	| path client |
 
-	path := (CpNodeJSRestPathPattern fromString: aString)
-		pathUsingParameters: aDictionary.
+	path := self basePath, ((CpNodeJSRestPathPattern fromString: aString)
+		pathUsingParameters: aDictionary).
 
 	client := ZnClient new
 		forJsonREST ;
-		get: path.
+		get: path ;
+		yourself.
 
 	client isSuccess
 		ifTrue: [ ^ client contents ]
@@ -65,12 +72,13 @@ SmModel class >> post: aString withParameters: aDictionary body: anObject [
 
 	| path client |
 
-	path := (CpNodeJSRestPathPattern fromString: aString)
-		pathUsingParameters: aDictionary.
+	path := self basePath, ((CpNodeJSRestPathPattern fromString: aString)
+		pathUsingParameters: aDictionary).
 
 	client := ZnClient new
 		forJsonREST ;
-		post: path contents: anObject asDictionary.
+		post: path contents: anObject asDictionary ;
+		yourself.
 
 	client isSuccess
 		ifTrue: [ ^ client contents ]
