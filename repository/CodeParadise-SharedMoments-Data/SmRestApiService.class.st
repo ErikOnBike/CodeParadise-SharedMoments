@@ -126,6 +126,21 @@ SmRestApiService class >> operationFor: aCompiledMethod [
 	self error: 'Not implemented yet'
 ]
 
+{ #category : #'class initialization' }
+SmRestApiService class >> postInstallOnce [
+
+	"Install the endpoint operations"
+
+	self methodDictionary do: [ :each |
+		(self isEndpointOperation: each)
+			ifTrue: [
+				| operation |
+
+				operation := self operationFor: each.
+				CpNodeJSRestEndpointOperation registerOperation: operation.
+				self traceCr: 'Registered endpoint operation: ', operation printString ] ]
+]
+
 { #category : #support }
 SmRestApiService class >> removeInstanceMethod: aCompiledMethod [
 
