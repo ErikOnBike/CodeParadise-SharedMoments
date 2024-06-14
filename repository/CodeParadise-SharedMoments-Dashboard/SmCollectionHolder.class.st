@@ -86,6 +86,14 @@ SmCollectionHolder >> add: anObject [
 	^ anObject
 ]
 
+{ #category : #enumerating }
+SmCollectionHolder >> collect: aBlock [
+
+	"Answer a collection of instances of the receiver mapped using the specified Block"
+
+	^ value collect: aBlock
+]
+
 { #category : #initialization }
 SmCollectionHolder >> initialize [
 
@@ -119,6 +127,14 @@ SmCollectionHolder >> remove: anObject [
 	owner valueChanged.
 
 	^ anObject
+]
+
+{ #category : #enumerating }
+SmCollectionHolder >> select: aBlock [
+
+	"Answer a collection of instances of the receiver which evaluate to true when using the specified Block"
+
+	^ value select: aBlock
 ]
 
 { #category : #accessing }
