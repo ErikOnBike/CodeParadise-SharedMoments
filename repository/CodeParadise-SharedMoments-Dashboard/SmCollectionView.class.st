@@ -22,9 +22,11 @@ SmCollectionView class >> style [
 	}
 	#container {
 		display: flex;
-		flex-wrap: none;
+		flex-wrap: nowrap;
 		position: relative;
-		overflow: hidden;
+		overflow-x: hidden;
+		min-width: 50em;
+		max-width: 90%;
 	}
 	#first,
 	#second {
@@ -35,7 +37,7 @@ SmCollectionView class >> style [
 		display: none;
 		position: absolute;
 		left: 50%;
-		transform: translate(-50%, -12px);
+		transform: translate(-50%, 2px);
 		z-index: 2;
 	}
 	:host(.deleted) #delete-status {
