@@ -165,7 +165,73 @@ SmRestApiService class >> timestampNow [
 ]
 
 { #category : #API }
-SmRestApiService >> createSession: accountId response: aServerResponse [
+SmRestApiService >> addCameraInvite: aRestRequest response: aServerResponse [
+
+	<post: '/api/v1/collections/:id/camera-invites'>
+
+	| id createdAt body collectionId |
+
+	body := (aRestRequest jsonBody) ifNil: [ self errorNoBody ].
+	self validateBody: body expectFields: #(#name #email #token #sentAt #acceptedAt).
+
+	id := self class newId.
+	createdAt := self class timestampNow.
+	collectionId := aRestRequest pathParameterAt: #id.
+
+	self
+		perform: #addCameraInvite
+		statement: 'INSERT INTO camera_invites (id, createdAt, collectionId, name, email, token, sentAt, acceptedAt) VALUES(:id, :createdAt, :collectionId, :name, :email, :token, :sentAt, :acceptedAt)'
+		bind: {
+			#id -> id.
+			#createdAt -> createdAt.
+			#collectionId -> collectionId.
+			#name -> (body at: #name).
+			#email -> (body at: #email).
+			#token -> (body at: #token).
+			#sentAt -> (body at: #sentAt).
+			#acceptedAt -> (body at: #acceptedAt)
+		} asDictionary.
+
+	self
+		send: {
+			#id -> id.
+			#createdAt -> createdAt } asDictionary
+		response: aServerResponse
+]
+
+{ #category : #API }
+SmRestApiService >> addCollection: aRestRequest response: aServerResponse [
+
+	<post: '/api/v1/accounts/:id/collections'>
+
+	| id createdAt body accountId |
+
+	body := (aRestRequest jsonBody) ifNil: [ self errorNoBody ].
+	self validateBody: body expectFields: #(#name).
+
+	id := self class newId.
+	createdAt := self class timestampNow.
+	accountId := aRestRequest pathParameterAt: #id.
+
+	self
+		perform: #addCollection
+		statement: 'INSERT INTO collections (id, createdAt, accountId, name) VALUES(:id, :createdAt, :accountId, :name)'
+		bind: {
+			#id -> id.
+			#createdAt -> createdAt.
+			#accountId -> accountId.
+			#name -> (body at: #name)
+		} asDictionary.
+
+	self
+		send: {
+			#id -> id.
+			#createdAt -> createdAt } asDictionary
+		response: aServerResponse
+]
+
+{ #category : #API }
+SmRestApiService >> createSessionForAccount: aDictionary response: aServerResponse [
 
 	| id createdAt accessToken |
 
@@ -174,12 +240,12 @@ SmRestApiService >> createSession: accountId response: aServerResponse [
 	accessToken := self class newToken.
 
 	self
-		insert: #createSession
+		perform: #createSession
 		statement: 'INSERT INTO sessions (id, createdAt, accountId, accessToken) VALUES(:id, :createdAt, :accountId, :accessToken)'
 		bind: {
 			#id -> id.
 			#createdAt -> createdAt.
-			#accountId -> accountId.
+			#accountId -> (aDictionary at: #id).
 			#accessToken -> accessToken
 		} asDictionary.
 
@@ -188,7 +254,7 @@ SmRestApiService >> createSession: accountId response: aServerResponse [
 			#id -> id.
 			#createdAt -> createdAt.
 			#accessToken -> accessToken.
-			#accountId -> accountId } asOrderedDictionary
+			#account -> aDictionary } asOrderedDictionary
 		response: aServerResponse
 ]
 
@@ -222,9 +288,9 @@ SmRestApiService >> initialize [
 { #category : #API }
 SmRestApiService >> login: aRestRequest response: aServerResponse [
 
-	<post: '/api/v1/login'>
+	<post: '/api/v1/sessions'>
 
-	| body account |
+	| body account collections |
 
 	body := (aRestRequest jsonBody) ifNil: [ self errorNoBody ].
 	self validateBody: body expectFields: #(#email #password).
@@ -233,10 +299,10 @@ SmRestApiService >> login: aRestRequest response: aServerResponse [
 	[
 		"Read account"
 		account := self
-			selectOne: #getAccount
-			statement: 'SELECT id, name, password FROM accounts WHERE email=:email'
-			bind: {
-				#email -> (body at: #email) } asDictionary.
+			selectOne: #login
+			statement: 'SELECT id, createdAt, updatedAt, name, email, password FROM accounts WHERE deletedAt IS NULL AND email=:email'
+		bind: {
+			#email -> (body at: #email) } asDictionary.
 
 		account ifNil: [ self errorInvalidLogin ].
 
@@ -245,8 +311,24 @@ SmRestApiService >> login: aRestRequest response: aServerResponse [
 			ifFalse: [ self errorInvalidLogin ]
 	] on: Error do: [ :err | self errorInvalidLogin ].
 
-	"Create session"
-	self createSession: (account at: #id) response: aServerResponse
+	"Read collections and add to account"
+	collections := self
+		selectMany: #getCollections
+		statement: 'SELECT id, createdAt, updatedAt, name FROM collections WHERE deletedAt IS NULL AND accountId=:accountId'
+		bind: { #accountId -> (account at: #id) } asDictionary.
+	account at: #collections put: collections.
+
+	"Read cameras and add to collections"
+	collections do: [ :each |
+		| cameras |
+		cameras := self
+			selectMany: #getCameras
+			statement: 'SELECT id, createdAt, updatedAt, name FROM cameras WHERE deletedAt IS NULL AND collectionId=:collectionId'
+			bind: { #collectionId -> (each at: #id) } asDictionary.
+		each at: #cameras put: cameras ].
+ 
+	"Create session and respond it"
+	self createSessionForAccount: account response: aServerResponse
 ]
 
 { #category : #database }
@@ -312,6 +394,58 @@ SmRestApiService >> send: anObject response: aServerResponse [
 		setHeaderWithName: 'Content-Type' value: 'application/json; charset=utf-8' ;
 		writeChunk: (CpJavaScriptJSON stringify: anObject) ;
 		end
+]
+
+{ #category : #API }
+SmRestApiService >> updateAccount: aRestRequest response: aServerResponse [
+
+	<put: '/api/v1/accounts/:id'>
+
+	| updatedAt body |
+
+	body := (aRestRequest jsonBody) ifNil: [ self errorNoBody ].
+	self validateBody: body expectFields: #(#name).
+
+	updatedAt := self class timestampNow.
+
+	self
+		perform: #updateAccount
+		statement: 'UPDATE accounts SET updatedAt=:updatedAt, name=:name WHERE id=:id'
+		bind: {
+			#updatedAt -> updatedAt.
+			#name -> (body at: #name).
+			#id -> (aRestRequest pathParameterAt: #id)
+		} asDictionary.
+
+	self
+		send: { #updatedAt -> updatedAt } asDictionary
+		response: aServerResponse
+]
+
+{ #category : #API }
+SmRestApiService >> updateCollection: aRestRequest response: aServerResponse [
+
+	<put: '/api/v1/collections/:id'>
+
+	| updatedAt body |
+
+	body := (aRestRequest jsonBody) ifNil: [ self errorNoBody ].
+	self validateBody: body expectFields: #(#name).
+
+	updatedAt := self class timestampNow.
+
+	self
+		perform: #updateCollection
+		statement: 'UPDATE collections SET updatedAt=:updatedAt, name=:name WHERE id=:id'
+		bind: {
+			#updatedAt -> updatedAt.
+			#name -> (body at: #name).
+			#id -> (aRestRequest pathParameterAt: #id)
+		} asDictionary.
+
+	self
+		send: { #updatedAt -> updatedAt } asDictionary
+		response: aServerResponse
 ]
 
 { #category : #validating }
