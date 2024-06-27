@@ -23,8 +23,17 @@ SmAccountView class >> style [
 		overflow-y: scroll;
 	}
 	#info {
+		display: flex;
+		align-items: center;
+		column-gap: .25em;
 		font-size: 1.8em;
 		margin-bottom: 2em;
+	}
+	::slotted(sl-input) {
+		display: inline-block;
+	}
+	::slotted(sl-input::part(input)) {
+		font-size: 1.8em;
 	}
 	#collections {
 		width: 80%;
@@ -46,7 +55,7 @@ SmAccountView class >> template [
 	<webResource: #html>
 
 	^ '<div id="container">
-		<div id="info"><span>Dashboard for </span><slot name="email"></slot></div>
+		<div id="info"><span>Dashboard for </span><slot name="name"></slot></div>
 		<div id="collections"><slot name="collections"></slot></div>
 		<div id="add-collection"><sl-icon-button id="add-collection-button" name="plus-circle"></sl-icon-button></div>
 	</div>'
