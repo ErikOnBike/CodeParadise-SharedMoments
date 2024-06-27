@@ -1,6 +1,6 @@
 Class {
 	#name : #SmAccountView,
-	#superclass : #CpView,
+	#superclass : #CpFieldsView,
 	#category : #'CodeParadise-SharedMoments-Dashboard-View'
 }
 
@@ -64,6 +64,24 @@ SmAccountView >> addCollection [
 	self serverAnnounce: (CpActionRequested id: #addCollection)
 ]
 
+{ #category : #rendering }
+SmAccountView >> createNameElement [
+
+	"Create the receiver's name input element and hook up event listeners"
+
+	(self appendChild: SlInput new atSlotNamed: #name)
+		placeholder: '<name>' ;
+		attachAsField: #name to: self
+]
+
+{ #category : #initialization }
+SmAccountView >> initialize [
+
+	super initialize.
+
+	self createNameElement
+]
+
 { #category : #initialization }
 SmAccountView >> initializeShadowRoot [
 
@@ -74,7 +92,10 @@ SmAccountView >> initializeShadowRoot [
 ]
 
 { #category : #rendering }
-SmAccountView >> renderEmail: aString [
+SmAccountView >> renderName: nameString email: emailString [
 
-	self replaceAllChildrenWith: aString asHtmlElement atSlotNamed: #email
+	self render: nameString toInputAtSlotNamed: #name.
+
+	(self firstChildAtSlotNamed: #name)
+		defaultValue: emailString
 ]
