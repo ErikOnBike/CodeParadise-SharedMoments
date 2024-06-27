@@ -1,11 +1,11 @@
 Class {
-	#name : #SmSmallPhotoFrameView,
+	#name : #SmIconPhotoFrameView,
 	#superclass : #CpView,
 	#category : #'CodeParadise-SharedMoments-Dashboard-View'
 }
 
 { #category : #'web resources' }
-SmSmallPhotoFrameView class >> template [
+SmIconPhotoFrameView class >> template [
 
 	<webResource: #html>
 
@@ -15,7 +15,7 @@ SmSmallPhotoFrameView class >> template [
 ]
 
 { #category : #rendering }
-SmSmallPhotoFrameView >> renderName: aString [
+SmIconPhotoFrameView >> renderName: aString [
 
 	self replaceAllChildrenWith: (aString ifNil: [ '<unnamed>' ]) asHtmlElement
 ]

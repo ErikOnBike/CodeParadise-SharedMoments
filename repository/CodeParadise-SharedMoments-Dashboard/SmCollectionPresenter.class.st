@@ -118,7 +118,7 @@ SmCollectionPresenter >> renderView [
 
 	self
 		renderAllChildViewsForModels: collection photoFrames
-		usingPresenter: SmSmallPhotoFramePresenter
+		usingPresenter: [ :each | each iconPresenterClass ]
 		atSlotNamed: #'photo-frames'
 ]
 

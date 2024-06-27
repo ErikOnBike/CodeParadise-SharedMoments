@@ -8,6 +8,14 @@ Class {
 	#category : #'CodeParadise-SharedMoments-Dashboard-Model'
 }
 
+{ #category : #presenter }
+SmPhotoFrame >> iconPresenterClass [
+
+	<serverEnvironment>
+
+	^ SmIconPhotoFramePresenter
+]
+
 { #category : #initialization }
 SmPhotoFrame >> initialize [
 

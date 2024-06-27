@@ -10,14 +10,12 @@ SmIconCameraView class >> template [
 	<webResource: #html>
 
 	^ '<div id="container">
-		<slot></slot>
+		<sl-tag id="name" size="medium" pill><slot></slot></sl-tag>
 	</div>'
 ]
 
 { #category : #rendering }
-SmIconCameraView >> renderInitials: aString [
+SmIconCameraView >> renderName: aString [
 
-	self replaceAllChildrenWith: (SlAvatar new
-		initials: aString ;
-		yourself)
+	self replaceAllChildrenWith: (aString ifNil: [ '<unnamed>' ]) asHtmlElement
 ]

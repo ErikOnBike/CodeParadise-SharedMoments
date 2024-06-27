@@ -1,17 +1,17 @@
 Class {
-	#name : #SmSmallPhotoFramePresenter,
+	#name : #SmIconPhotoFramePresenter,
 	#superclass : #CpPresenter,
 	#category : #'CodeParadise-SharedMoments-Dashboard-Presenter'
 }
 
 { #category : #accessing }
-SmSmallPhotoFramePresenter >> photoFrame [
+SmIconPhotoFramePresenter >> photoFrame [
 
 	^ self model
 ]
 
 { #category : #rendering }
-SmSmallPhotoFramePresenter >> renderView [
+SmIconPhotoFramePresenter >> renderView [
 
 	self view
 		renderName: self photoFrame name

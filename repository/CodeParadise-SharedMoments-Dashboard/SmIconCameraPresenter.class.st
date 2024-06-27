@@ -14,5 +14,5 @@ SmIconCameraPresenter >> camera [
 SmIconCameraPresenter >> renderView [
 
 	self view
-		renderInitials: self camera nameInitials
+		renderName: self camera name
 ]
