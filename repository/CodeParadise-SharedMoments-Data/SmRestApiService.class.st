@@ -215,25 +215,6 @@ SmRestApiService >> initialize [
 	preparedStatements := Dictionary new
 ]
 
-{ #category : #database }
-SmRestApiService >> insert: aSymbol statement: aString bind: aDictionary [
-
-	"Insert a row in the database and answer the id of the created row.
-	If no id is present, a new id is added to the binding (will change the binding 'in place')."
-
-	| resultInfo rowId |
-
-	rowId := aDictionary at: #id ifAbsentPut: [ self class newId ].
-
-	resultInfo := (preparedStatements at: aSymbol ifAbsentPut: [ database prepare: aString ])
-		runWithBindings: aDictionary.
-
-	(resultInfo at: #changes) == 1
-		ifFalse: [ self error: 'Did not insert a single row as expected' ].
-
-	^ rowId
-]
-
 { #category : #API }
 SmRestApiService >> login: aRestRequest response: aServerResponse [
 
@@ -265,13 +246,50 @@ SmRestApiService >> login: aRestRequest response: aServerResponse [
 ]
 
 { #category : #database }
+SmRestApiService >> perform: aSymbol statement: aString bind: aDictionary [
+
+	"Update a row in the database"
+
+	| resultInfo |
+
+	resultInfo := (self prepare: aSymbol statement: aString)
+		runWithBindings: aDictionary.
+
+	(resultInfo at: #changes) == 1
+		ifFalse: [ self error: 'Did not update a single row as expected' ]
+]
+
+{ #category : #database }
+SmRestApiService >> prepare: aSymbol statement: aString [
+
+	"Answer the prepared statement identified by a Symbol"
+
+	^ preparedStatements
+		at: aSymbol
+		ifPresent: [ :statement |
+			statement source = aString
+				ifTrue: [ statement ]
+				ifFalse: [ preparedStatements at: aSymbol put: (database prepare: aString) ] ]
+		ifAbsentPut: [ database prepare: aString ]
+]
+
+{ #category : #database }
+SmRestApiService >> selectMany: aSymbol statement: aString bind: aDictionary [
+
+	"Select (possibly) multiple rows from the database and answer a collection"
+
+	^ (self prepare: aSymbol statement: aString)
+		allWithBindings: aDictionary
+]
+
+{ #category : #database }
 SmRestApiService >> selectOne: aSymbol statement: aString bind: aDictionary [
 
 	"Select a single row from the database and answer the object found"
 
 	| rows |
 
-	rows := (preparedStatements at: aSymbol ifAbsentPut: [ database prepare: aString ])
+	rows := (self prepare: aSymbol statement: aString)
 		allWithBindings: aDictionary.
 
 	rows size > 1
