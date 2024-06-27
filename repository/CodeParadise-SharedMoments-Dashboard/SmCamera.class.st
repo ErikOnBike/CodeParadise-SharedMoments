@@ -9,14 +9,6 @@ Class {
 	#category : #'CodeParadise-SharedMoments-Dashboard-Model'
 }
 
-{ #category : #'instance creation' }
-SmCamera class >> newWithName: aString [
-
-	^ self basicNew
-		initializeWithName: aString ;
-		yourself
-]
-
 { #category : #presenter }
 SmCamera >> iconPresenterClass [
 
