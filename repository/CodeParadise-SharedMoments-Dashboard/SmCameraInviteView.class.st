@@ -1,6 +1,6 @@
 Class {
 	#name : #SmCameraInviteView,
-	#superclass : #CpView,
+	#superclass : #CpFieldsView,
 	#category : #'CodeParadise-SharedMoments-Dashboard-View'
 }
 
@@ -64,9 +64,9 @@ SmCameraInviteView class >> template [
 				<sl-icon name="send"></sl-icon><span id="title"><span>Camera invite for</span><slot name="collection"></slot></span>
 			</div>
 			<div id="content">
-				<sl-input id="name" label="Name"></sl-input>
-				<sl-input id="invitee" label="Email address" type="email"></sl-input>
-				<sl-input id="token" label="Token" placeholder="<token will be set when invite is sent>" readonly></sl-input>
+				<div id="name"><slot name="name"></slot></div>
+				<div id="invitee"><slot name="email"></slot></div>
+				<div id="token"><slot name="token"></slot></div>
 			</div>
 			<div id="footer" slot="footer">
 				<sl-button id="invite" variant="primary">Invite</sl-button><div id="sent"><span>This invite was sent </span><sl-relative-time></sl-relative-time></div>
@@ -76,7 +76,64 @@ SmCameraInviteView class >> template [
 ]
 
 { #category : #rendering }
+SmCameraInviteView >> createEmailElement [
+
+	"Create the receiver's email input element and hook up event listeners"
+
+	(self appendChild: SlInput new atSlotNamed: #email)
+		appendChild: ((SlIcon named: #at)
+			slot: #prefix ;
+			yourself) ;
+		label: 'Email address' ;
+		placeholder: '<email>' ;
+		type: #email ;
+		attachAsField: #email to: self
+]
+
+{ #category : #rendering }
+SmCameraInviteView >> createNameElement [
+
+	"Create the receiver's name input element and hook up event listeners"
+
+	(self appendChild: SlInput new atSlotNamed: #name)
+		label: 'Name' ;
+		placeholder: '<name>' ;
+		attachAsField: #name to: self
+]
+
+{ #category : #rendering }
+SmCameraInviteView >> createTokenElement [
+
+	"Create the receiver's name input element and hook up event listeners"
+
+	(self appendChild: SlInput new atSlotNamed: #token)
+		label: 'Token' ;
+		beReadonly ;
+		placeholder: '<token will be set when invite is sent>' ;
+		attachAsField: #token to: self
+]
+
+{ #category : #initialization }
+SmCameraInviteView >> initialize [
+
+	super initialize.
+
+	self
+		createNameElement ;
+		createEmailElement ;
+		createTokenElement
+]
+
+{ #category : #rendering }
 SmCameraInviteView >> renderCollection: aString [
 
 	self replaceAllChildrenWith: aString asHtmlElement atSlotNamed: #collection
+]
+
+{ #category : #rendering }
+SmCameraInviteView >> renderName: nameString email: emailString [
+
+	self
+		render: nameString toInputAtSlotNamed: #name ;
+		render: emailString toInputAtSlotNamed: #email
 ]
