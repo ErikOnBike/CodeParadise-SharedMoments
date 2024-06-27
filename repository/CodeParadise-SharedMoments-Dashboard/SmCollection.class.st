@@ -12,23 +12,28 @@ Class {
 	#category : #'CodeParadise-SharedMoments-Dashboard-Model'
 }
 
-{ #category : #'instance creation' }
-SmCollection class >> newWithName: aString [
+{ #category : #'as yet unclassified' }
+SmCollection class >> forAccount: anAccount [
 
-	^ self basicNew
-		initializeWithName: aString ;
-		yourself
+	| collection |
+
+	collection := self newForAccount: anAccount.
+
+	"Store the collection and update its internals"
+	collection fromDictionary: (SmAccount
+		post: '/:id/collections'
+		withParameters: {  #id -> anAccount id } asDictionary
+		body: collection asDictionary).
+
+	^ collection
 ]
 
-{ #category : #private }
-SmCollection >> account: anAccount [
+{ #category : #'instance creation' }
+SmCollection class >> newForAccount: anAccount [
 
-	"Set the account of the receiver.
-
-	Implementation:
-	This is an internal method, do not announce a value changed."
-
-	account setValue: anAccount
+	^ self basicNew
+		initializeWithAccount: anAccount ;
+		yourself
 ]
 
 { #category : #accessing }
@@ -74,26 +79,34 @@ SmCollection >> initialize [
 
 	super initialize.
 
-	account := SmValueHolder type: SmAccount owner: self.
-	name := SmValueHolder owner: self.
+	name := SmValueHolder owner: self value: ''.
 	cameras := SmCollectionHolder type: SmCamera owner: self.
 	photoFrames := SmCollectionHolder type: SmPhotoFrame owner: self.
 	photoCount := SmValueHolder owner: self value: 0.
-	invites := SmCollectionHolder owner: self
+	invites := SmCollectionHolder owner: self.
+
+	"Account is not user settable"
+	"account := nil"
 ]
 
 { #category : #initialization }
-SmCollection >> initializeWithName: aString [
+SmCollection >> initializeWithAccount: anAccount [
 
 	self initialize.
 
-	name setValue: aString
+	account := anAccount
 ]
 
 { #category : #accessing }
 SmCollection >> invites [
 
 	^ invites value
+]
+
+{ #category : #accessing }
+SmCollection >> modelInstVarNames [
+
+	^ #(#name)
 ]
 
 { #category : #accessing }

@@ -5,7 +5,8 @@ Class {
 		'id',
 		'createdAt',
 		'updatedAt',
-		'deletedAt'
+		'deletedAt',
+		'updateState'
 	],
 	#category : #'CodeParadise-SharedMoments-Dashboard-Model'
 }
@@ -13,15 +14,16 @@ Class {
 { #category : #API }
 SmModel class >> basePath [
 
-	^ 'http://localhost:8181'
+	^ 'http://localhost:8181/api/v1/', self nameWithoutPrefix asKebabCase asPlural
 ]
 
 { #category : #API }
 SmModel class >> forId: aString [
 
-	^ self fromDictionary: (self
-		get: self retrievePath
+	^ (self
+		get: '/:id'
 		withParameters: { #id -> aString } asDictionary)
+			ifNotNil: [ :dict | self fromDictionary: dict ]
 ]
 
 { #category : #'instance creation' }
@@ -44,10 +46,16 @@ SmModel class >> get: aString withParameters: aDictionary [
 	path := self basePath, ((CpNodeJSRestPathPattern fromString: aString)
 		pathUsingParameters: aDictionary).
 
-	client := ZnClient new
-		forJsonREST ;
-		get: path ;
-		yourself.
+	[
+		client := ZnClient new
+			forJsonREST ;
+			enforceHttpSuccess: true ;
+			get: path ;
+			yourself
+	] on: ZnHttpUnsuccessful do: [ :httpError |
+		httpError response isNotFound
+			ifTrue: [ ^ nil ].
+		httpError signal ].
 
 	client isSuccess
 		ifTrue: [ ^ client contents ]
@@ -69,7 +77,7 @@ SmModel class >> post: aString body: anObject [
 
 	^ self
 		post: aString
-		withParameters: Dictionary new
+		withParameters: nil
 		body: anObject
 ]
 
@@ -85,6 +93,7 @@ SmModel class >> post: aString withParameters: aDictionary body: anObject [
 
 	client := ZnClient new
 		forJsonREST ;
+		enforceHttpSuccess: true ;
 		post: path contents: anObject asDictionary ;
 		yourself.
 
@@ -93,18 +102,66 @@ SmModel class >> post: aString withParameters: aDictionary body: anObject [
 		ifFalse: [ self error: 'Failed to write data to REST API' ]
 ]
 
+{ #category : #API }
+SmModel class >> postBody: anObject [
+
+	"Perform POST operation on REST API"
+
+	^ self
+		post: ''
+		withParameters: nil
+		body: anObject
+]
+
+{ #category : #API }
+SmModel class >> put: aString body: anObject [
+
+	"Perform PUT operation on REST API"
+
+	^ self
+		put: aString
+		withParameters: nil
+		body: anObject
+]
+
+{ #category : #API }
+SmModel class >> put: aString withParameters: aDictionary body: anObject [
+
+	"Perform PUT operation on REST API"
+
+	| path client |
+
+	path := self basePath, ((CpNodeJSRestPathPattern fromString: aString)
+		pathUsingParameters: aDictionary).
+
+	client := ZnClient new
+		forJsonREST ;
+		enforceHttpSuccess: true ;
+		put: path contents: anObject asDictionary ;
+		yourself.
+
+	client isSuccess
+		ifTrue: [ ^ client contents ]
+		ifFalse: [ self error: 'Failed to write data to REST API' ]
+]
+
+{ #category : #API }
+SmModel class >> putBody: anObject [
+
+	"Perform PUT operation on REST API"
+
+	^ self
+		put: ''
+		withParameters: nil
+		body: anObject
+]
+
 { #category : #accessing }
 SmModel class >> removalPeriod [
 
 	"Answer the number of seconds after deletion that a model will be removed"
 
 	^ 259200 "3 days = 60 * 60 * 24 * 3"
-]
-
-{ #category : #API }
-SmModel class >> retrievePath [
-
-	^ '/api/v1/', self nameWithoutPrefix asKebabCase, '/:id'
 ]
 
 { #category : #support }
@@ -161,18 +218,23 @@ SmModel >> asDictionary [
 
 	dictionary := Dictionary new.
 
-	self publicInstVarNames do: [ :each |
+	self modelInstVarNames do: [ :each |
 		| value |
-		value := self publicInstVarNamed: each.
+		value := self modelInstVarNamed: each.
 		value class == SmValueHolder
-			ifTrue: [ value := value value ]
+			ifTrue: [
+				value := value value.
+				(value isKindOf: SmModel)
+					ifTrue: [ value := value asDictionary ] ]
 			ifFalse: [
 				value class == SmCollectionHolder
 					ifTrue: [
-						value := value collect: [ :element |
-							(element isKindOf: SmModel)
-								ifTrue: [ element asDictionary ]
-								ifFalse: [ element ] ] ] ].
+						value := value
+							collect: [ :element |
+								(element isKindOf: SmModel)
+									ifTrue: [ element asDictionary ]
+									ifFalse: [ element ] ]
+							as: Array ] ].
 		dictionary at: each put: value ].
 
 	^ dictionary
@@ -207,9 +269,15 @@ SmModel >> fromDictionary: aDictionary [
 
 	"Update the receiver with the specified Dictionary"
 
+	| needUpdate |
+
+	updateState := id
+		ifNotNil: [ #updating ]
+		ifNil: [ #initializing ].
+
 	aDictionary keysAndValuesDo: [ :key :value |
 		| prevValue |
-		prevValue := self publicInstVarNamed: key.
+		prevValue := self modelInstVarNamed: key.
 		prevValue class == SmValueHolder
 			ifTrue: [
 				| newValue |
@@ -225,7 +293,15 @@ SmModel >> fromDictionary: aDictionary [
 							ifTrue: [ value collect: [ :each | type fromDictionary: each ] ]
 							ifFalse: [ value ].
 						prevValue setCollection: newValue ]
-					ifFalse: [ self publicInstVarNamed: key put: value ] ] ]
+					ifFalse: [ self modelInstVarNamed: key put: value ] ] ].
+
+	"Check if an update is needed (then reset state to allow #valueChanged to have effect)"
+	needUpdate := updateState == #updated.
+	updateState := nil.
+
+	"Announce receiver has changed (if applicable)"
+	needUpdate
+		ifTrue: [ self valueChanged ]
 ]
 
 { #category : #accessing }
@@ -244,6 +320,40 @@ SmModel >> isDeleted [
 SmModel >> isNew [
 
 	^ id isNil
+]
+
+{ #category : #accessing }
+SmModel >> modelInstVarNamed: aString [
+
+	"Answer the public instance variable with the specified name of the receiver.
+	By default all instance variables are public."
+
+	^ self instVarNamed: aString
+]
+
+{ #category : #accessing }
+SmModel >> modelInstVarNamed: aString put: anObject [
+
+	"Store the specified value in the public instance variable with the specified name of the receiver.
+	By default all instance variables are public."
+
+	^ self instVarNamed: aString put: anObject
+]
+
+{ #category : #accessing }
+SmModel >> modelInstVarNames [
+
+	"Answer the model instance variables of the receiver.
+	These are the instance variables which can be get/set.
+	By default all instance variables are get/set-able,
+	except for variables explicitly set to private."
+
+	| privateInstVarNames |
+
+	privateInstVarNames := self privateInstVarNames.
+
+	^ self class instVarNames
+		reject: [ :each | privateInstVarNames includes: each ]
 ]
 
 { #category : #presenters }
@@ -272,30 +382,13 @@ SmModel >> preferredPresenterClass [
 ]
 
 { #category : #accessing }
-SmModel >> publicInstVarNamed: aString [
+SmModel >> privateInstVarNames [
 
-	"Answer the public instance variable with the specified name of the receiver.
-	By default all instance variables are public."
+	"Answer the private instance variables of the receiver.
+	These are the instance variables which can NOT be get/set.
+	By default no instance variable is private."
 
-	^ self instVarNamed: aString
-]
-
-{ #category : #accessing }
-SmModel >> publicInstVarNamed: aString put: anObject [
-
-	"Store the specified value in the public instance variable with the specified name of the receiver.
-	By default all instance variables are public."
-
-	^ self instVarNamed: aString put: anObject
-]
-
-{ #category : #accessing }
-SmModel >> publicInstVarNames [
-
-	"Answer the public instance variables of the receiver.
-	By default all instance variables are public."
-
-	^ self class instVarNames
+	^ #()
 ]
 
 { #category : #accessing }
@@ -307,6 +400,26 @@ SmModel >> removalTimestampString [
 	deletedAt ifNil: [ ^ nil ].
 
 	^ SmModel timestampStringFor: deletedAt + SmModel removalPeriod
+]
+
+{ #category : #database }
+SmModel >> retrieve [
+
+	"Retrieve the (full) receiver from the DB"
+
+	self fromDictionary: (self class
+		get: '/:id'
+		withParameters: { #id -> id } asDictionary)
+]
+
+{ #category : #database }
+SmModel >> store [
+
+	"Store the receiver in the DB and update its internal fields"
+
+	self fromDictionary: (self isNew
+		ifTrue: [ self class postBody: self asDictionary ]
+		ifFalse: [ self class put: '/:id' withParameters: { #id -> id } asDictionary body: self asDictionary ])
 ]
 
 { #category : #actions }
@@ -330,7 +443,11 @@ SmModel >> updatedAt [
 { #category : #announcing }
 SmModel >> valueChanged [
 
-	updatedAt := SmModel timestampNow.
+	updateState == #updating
+		ifTrue: [ updateState := #updated ].
+	updateState ifNotNil: [ ^ self ].
 
-	super valueChanged
+	super valueChanged.
+
+	self store
 ]

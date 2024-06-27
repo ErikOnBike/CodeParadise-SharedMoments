@@ -15,19 +15,7 @@ SmAccount >> addCollection [
 
 	"Add a new (empty) Collection to the receiver"
 
-	self addCollection: SmCollection new
-]
-
-{ #category : #accessing }
-SmAccount >> addCollection: aCollection [
-
-	collections add: aCollection.
-	self valueChanged.
-
-	"Add link back"
-	aCollection account: self.
-
-	^ aCollection
+	^ collections add: (SmCollection forAccount: self)
 ]
 
 { #category : #accessing }

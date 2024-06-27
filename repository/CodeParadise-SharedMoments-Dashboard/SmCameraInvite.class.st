@@ -3,11 +3,11 @@ Class {
 	#superclass : #SmModel,
 	#instVars : [
 		'collection',
-		'invitee',
 		'name',
+		'email',
 		'token',
 		'sentAt',
-		'acceptCount'
+		'acceptedAt'
 	],
 	#category : #'CodeParadise-SharedMoments-Dashboard-Model'
 }
@@ -15,15 +15,25 @@ Class {
 { #category : #'instance creation' }
 SmCameraInvite class >> forCollection: aCollection [
 
+	| cameraInvite |
+
+	cameraInvite := self newForCollection: aCollection.
+
+	"Store the camera invite and update its internals"
+	cameraInvite fromDictionary: (SmCollection
+		post: '/:id/camera-invites'
+		withParameters: {  #id -> aCollection id } asDictionary
+		body: cameraInvite asDictionary).
+
+	^ cameraInvite
+]
+
+{ #category : #'instance creation' }
+SmCameraInvite class >> newForCollection: aCollection [
+
 	^ self basicNew
 		initializeWithCollection: aCollection ;
 		yourself
-]
-
-{ #category : #accessing }
-SmCameraInvite >> acceptCount [
-
-	^ acceptCount
 ]
 
 { #category : #accessing }
@@ -32,10 +42,22 @@ SmCameraInvite >> collection [
 	^ collection
 ]
 
+{ #category : #accessing }
+SmCameraInvite >> email [
+
+	^ email value
+]
+
+{ #category : #accessing }
+SmCameraInvite >> email: aString [
+
+	email value: aString
+]
+
 { #category : #testing }
 SmCameraInvite >> hasInvitee [
 
-	^ self invitee isEmptyOrNil not
+	^ self email isEmptyOrNil not
 ]
 
 { #category : #presenter }
@@ -52,13 +74,14 @@ SmCameraInvite >> initialize [
 	super initialize.
 
 	collection := SmValueHolder owner: self.
-	invitee := SmValueHolder owner: self.
+	email := SmValueHolder owner: self.
 	name := SmValueHolder owner: self.
 
-	"Collection, sendAt, acceptCount and token are not user settable"
+	"Collection, sendAt, acceptedAt and token are not user settable"
 	"collection := nil."
 	"sendAt := nil."
-	acceptCount := 0
+	"acceptedAt := nil."
+	"token := nil"
 ]
 
 { #category : #initialization }
@@ -69,22 +92,10 @@ SmCameraInvite >> initializeWithCollection: aCollection [
 	collection := aCollection
 ]
 
-{ #category : #accessing }
-SmCameraInvite >> invitee [
-
-	^ invitee value
-]
-
-{ #category : #accessing }
-SmCameraInvite >> invitee: aString [
-
-	invitee value: aString
-]
-
 { #category : #testing }
 SmCameraInvite >> isAccepted [
 
-	^ acceptCount > 0
+	^ acceptedAt isNotNil
 ]
 
 { #category : #testing }
@@ -111,6 +122,12 @@ SmCameraInvite >> name [
 SmCameraInvite >> name: aString [
 
 	name value: aString
+]
+
+{ #category : #accessing }
+SmCameraInvite >> privateInstVarNames [
+
+	^ #(#collection)
 ]
 
 { #category : #accessing }

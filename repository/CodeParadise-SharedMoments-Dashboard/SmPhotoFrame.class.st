@@ -39,3 +39,9 @@ SmPhotoFrame >> name [
 
 	^ name value
 ]
+
+{ #category : #accessing }
+SmPhotoFrame >> privateInstVarNames [
+
+	^ #(#collection)
+]

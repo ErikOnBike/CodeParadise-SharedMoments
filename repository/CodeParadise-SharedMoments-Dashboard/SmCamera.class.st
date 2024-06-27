@@ -3,7 +3,8 @@ Class {
 	#superclass : #SmModel,
 	#instVars : [
 		'collections',
-		'name'
+		'name',
+		'accessToken'
 	],
 	#category : #'CodeParadise-SharedMoments-Dashboard-Model'
 }
@@ -77,4 +78,10 @@ SmCamera >> nameInitials [
 			ifFalse: [ letter := false ] ].
 
 	^ first ifNotNil: [ String with: first ]
+]
+
+{ #category : #accessing }
+SmCamera >> privateInstVarNames [
+
+	^ #(#collection)
 ]

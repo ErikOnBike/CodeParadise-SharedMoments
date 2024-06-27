@@ -3,7 +3,7 @@ Class {
 	#superclass : #SmModel,
 	#instVars : [
 		'accessToken',
-		'accountId'
+		'account'
 	],
 	#category : #'CodeParadise-SharedMoments-Dashboard-Model'
 }
@@ -13,7 +13,7 @@ SmSession class >> withCredentials: aCredentials [
 
 	"Answer a new instance of the receiver using the specified credentials"
 
-	^ self fromDictionary: (self post: '/api/v1/login' body: aCredentials asDictionary)
+	^ self fromDictionary: (self postBody: aCredentials asDictionary)
 ]
 
 { #category : #accessing }
@@ -23,9 +23,15 @@ SmSession >> accessToken [
 ]
 
 { #category : #accessing }
-SmSession >> accountId [
+SmSession >> account [
 
-	^ accountId
+	^ account value
+]
+
+{ #category : #testing }
+SmSession >> hasAccount [
+
+	^ account isNotNil
 ]
 
 { #category : #initialization }
@@ -33,7 +39,8 @@ SmSession >> initialize [
 
 	super initialize.
 
-	"Account id and access token not user settable"
-	"accountId := nil"
+	account := SmValueHolder type: SmAccount owner: self.
+
+	"Access token is not user settable"
 	"accessToken := nil"
 ]

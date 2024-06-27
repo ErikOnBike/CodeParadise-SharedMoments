@@ -8,15 +8,6 @@ Class {
 	#category : #'CodeParadise-SharedMoments-Dashboard-Model'
 }
 
-{ #category : #'instance creation' }
-SmCredentials class >> fromDictionary: aDictionary [
-
-	^ self new
-		email: (aDictionary at: #email ifAbsent: [ nil ]) ;
-		password: (aDictionary at: #password ifAbsent: [ nil ]) ;
-		yourself
-]
-
 { #category : #accessing }
 SmCredentials >> email [
 

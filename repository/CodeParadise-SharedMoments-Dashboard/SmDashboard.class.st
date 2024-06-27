@@ -11,44 +11,44 @@ Class {
 { #category : #accessing }
 SmDashboard >> account [
 
-	^ account
+	^ session
+		ifNotNil: [ session account ]
 ]
 
-{ #category : #accessing }
-SmDashboard >> account: anAccount session: aSession [
+{ #category : #testing }
+SmDashboard >> hasAccount [
 
-	account := anAccount.
-	session := aSession.
-
-	self valueChanged
+	^ session
+		ifNotNil: [ session hasAccount ]
+		ifNil: [ false ]
 ]
 
 { #category : #'event handling' }
 SmDashboard >> login: aDictionary [
 
-	| credentials newSession newAccount |
+	"Try to login with the specified credentials (email/password)
+	and answer a Boolean indicating whether the login was successful"
+
+	| credentials |
 
 	credentials := SmCredentials fromDictionary: aDictionary.
 
-	newSession := SmSession withCredentials: credentials.
+	self session: (SmSession withCredentials: credentials).
 
-	newAccount := SmAccount forId: newSession accountId.
-newAccount inspect.
-	newAccount ifNil: [ ^ false ].
-
-	self account: newAccount session: newSession
+	^ true
 ]
 
 { #category : #'event handling' }
 SmDashboard >> logout [
 
-	self account: nil session: nil
+	self session: nil
 ]
 
 { #category : #presenter }
 SmDashboard >> preferredPresenterClass [
 
-	account ifNil: [ ^ SmLoginPresenter ].
+	self hasAccount
+		ifFalse: [ ^ SmLoginPresenter ].
 
 	^ super preferredPresenterClass
 ]
@@ -57,4 +57,11 @@ SmDashboard >> preferredPresenterClass [
 SmDashboard >> session [
 
 	^ session
+]
+
+{ #category : #accessing }
+SmDashboard >> session: aSession [
+
+	session := aSession.
+	self valueChanged
 ]
