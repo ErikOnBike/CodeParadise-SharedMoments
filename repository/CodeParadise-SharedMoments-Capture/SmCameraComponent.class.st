@@ -305,6 +305,12 @@ SmCameraComponent >> flipStatus [
 	^ self shadowedElementWithId: #'flip-status'
 ]
 
+{ #category : #actions }
+SmCameraComponent >> handleSendPictureResponse: aResponse [
+
+	CpClientEnvironment current alert: aResponse printString
+]
+
 { #category : #testing }
 SmCameraComponent >> hasCaptured [
 
@@ -360,7 +366,9 @@ SmCameraComponent >> keepPicture [
 	"Keep the current picture, announcing its content"
 
 	self canvasElement toBlobType: 'image/png' thenDo: [ :blob |
-		CpDownloader blob: blob filename: 'picture.png' ]
+		(self sendPicture: blob)
+			then: [ :response | self handleSendPictureResponse: response ]
+			catch: [ :error | CpClientEnvironment current alert: 'Failed to send photo ', error printString ] ]
 ]
 
 { #category : #'event handling' }
@@ -433,6 +441,34 @@ SmCameraComponent >> retakePicture [
 	self attachVideo
 ]
 
+{ #category : #actions }
+SmCameraComponent >> sendPicture: aBlob [
+
+	"Send the specified Blob to the server for the selected Collections"
+
+	| orientation |
+
+	orientation := (#(#left #right) includes: (self attributeAt: #orientation))
+		ifTrue: [ #landscape ]
+		ifFalse: [ #portrait ].
+
+	^ CpBrowserWindow current
+		fetch: 'https://paradise:9443/api/v1/photos'
+		withOptions: {
+			#method -> #POST.
+			#headers -> {
+				#'Content-Type' -> 'image/png'.
+				#Authorization -> 'Bearer 123'.
+				#'SM-Collection-IDs' -> '7bc9f3e9-3dda-444f-9451-7eaa0ca56396,e76343f7-d976-4ebe-8171-0768005dd3be'.
+				#'SM-Photo-Width' -> width printString.
+				#'SM-Photo-Height' -> height printString.
+				#'SM-Photo-Orientation' -> orientation } asDictionary.
+			#body -> aBlob.
+			#mode -> #cors.
+			#redirect -> #error.
+			#priority -> #high } asDictionary
+]
+
 { #category : #accessing }
 SmCameraComponent >> switchButton [
 
@@ -462,7 +498,7 @@ SmCameraComponent >> takePicture [
 	"Take picture from the videa stream.
 	Adjust size according to video source and update state."
 
-	| video canvas context width height |
+	| video canvas context |
 
 	video := self videoElement.
 	canvas := self canvasElement.
