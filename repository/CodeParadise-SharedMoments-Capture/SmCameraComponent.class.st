@@ -19,7 +19,9 @@ Class {
 		'facingMode',
 		'videoStream',
 		'visibilityChangeHandler',
-		'orientationChangeHandler'
+		'orientationChangeHandler',
+		'width',
+		'height'
 	],
 	#category : #'CodeParadise-SharedMoments-Capture-View'
 }
@@ -494,6 +496,9 @@ SmCameraComponent >> videoStream [
 		#video -> {
 			#facingMode -> {
 				#exact -> facingMode
+			} asDictionary.
+			#width -> {
+				#min -> 1280		"Use HD quality for now"
 			} asDictionary
 		} asDictionary
 	} asDictionary
