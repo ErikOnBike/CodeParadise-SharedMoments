@@ -26,7 +26,8 @@ SmDashboardPresenter >> renderView [
 		usingPresenter: SmDashboardMenuBarPresenter
 		atSlotNamed: #'menu-bar'.
 
-	self renderChildViewForModel: self account atSlotNamed: #content.
+	self account
+		ifNotNil: [ :account | self renderChildViewForModel: account atSlotNamed: #content ].
 
 	self
 		renderChildViewForModel: self dashboard
