@@ -61,7 +61,7 @@ SmRestApiService class >> installInstanceMethod: aCompiledMethod [
 SmRestApiService class >> isEndpointOperation: aCompiledMethod [
 
 	aCompiledMethod pragmas
-		detect: [ :each | #(#get: #post:) includes: each keyword ] ifNone: [ ^ false ].
+		detect: [ :each | #(#get: #post: #put: #delete:) includes: each keyword ] ifNone: [ ^ false ].
 
 	^ true
 ]
@@ -118,10 +118,14 @@ SmRestApiService class >> operationFor: aCompiledMethod [
 	action := MessageSend receiver: self current selector: aCompiledMethod selector.
 
 	pragma := aCompiledMethod pragmas
-		detect: [ :each | #(#get: #post:) includes: each keyword ] ifNone: [ ^ nil ].
+		detect: [ :each | #(#get: #post: #put: #delete:) includes: each keyword ] ifNone: [ ^ nil ].
 
+	pragma keyword == #get:
+		ifTrue: [ ^ CpNodeJSRestEndpointOperation path: pragma arguments first getOperation: action ].
 	pragma keyword == #post:
 		ifTrue: [ ^ CpNodeJSRestEndpointOperation path: pragma arguments first postOperation: action ].
+	pragma keyword == #put:
+		ifTrue: [ ^ CpNodeJSRestEndpointOperation path: pragma arguments first putOperation: action ].
 
 	self error: 'Not implemented yet'
 ]
