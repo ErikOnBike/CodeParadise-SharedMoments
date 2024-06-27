@@ -50,6 +50,12 @@ SmCollectionHolder class >> owner: aModel collection: aCollection unique: aBoole
 ]
 
 { #category : #'instance creation' }
+SmCollectionHolder class >> type: aClass owner: aModel [
+
+	^ self type: aClass owner: aModel collection: OrderedCollection new unique: true
+]
+
+{ #category : #'instance creation' }
 SmCollectionHolder class >> type: aClass owner: aModel collection: aCollection unique: aBoolean [
 
 	"Answer a new instance of the receiver for the specified owner (a Model).
@@ -75,7 +81,7 @@ SmCollectionHolder >> add: anObject [
 	announced."
 
 	(type isNotNil and: [ (anObject isKindOf: type) not ])
-		ifFalse: [ self error: 'Adding instance of an unexpected type' ].
+		ifTrue: [ self error: 'Adding instance of an unexpected type' ].
 
 	(uniqueElements and: [ value includes: anObject ])
 		ifTrue: [ ^ anObject ].
@@ -94,6 +100,14 @@ SmCollectionHolder >> collect: aBlock [
 	^ value collect: aBlock
 ]
 
+{ #category : #enumerating }
+SmCollectionHolder >> collect: aBlock as: aCollectionClass [
+
+	"Answer a collection of instances of the receiver mapped using the specified Block"
+
+	^ value collect: aBlock as: aCollectionClass
+]
+
 { #category : #initialization }
 SmCollectionHolder >> initialize [
 
@@ -106,8 +120,13 @@ SmCollectionHolder >> initialize [
 { #category : #initialization }
 SmCollectionHolder >> initializeWithType: aClass owner: aModel collection: aCollection unique: aBoolean [
 
-	self initializeWithType: aClass owner: aModel value: aCollection.
+	"Initialize the receiver"
 
+	"Initialize without a type, because type is used for elements not the collection itself"
+	self initializeWithType: nil owner: aModel value: aCollection.
+
+	"Set the (element) type now the initial value has been set"
+	type := aClass.
 	uniqueElements := aBoolean
 ]
 
@@ -144,7 +163,7 @@ SmCollectionHolder >> setCollection: aCollection [
 	update the collection and signal a value change."
 
 	(type isNotNil and: [ (aCollection allSatisfy: [ :each | each isKindOf: type ]) not ])
-		ifFalse: [ self error: 'Setting collection with an unexpected element type' ].
+		ifTrue: [ self error: 'Setting collection with an unexpected element type' ].
 
 	"Test two ways because of unique values and subcollections"
 	((aCollection allSatisfy: [ :each | value includes: each ]) and: [ value allSatisfy: [ :each | aCollection includes: each ] ])

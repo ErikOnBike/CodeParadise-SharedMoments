@@ -96,7 +96,7 @@ SmValueHolder >> setValue: anObject [
 	"Set the receiver to the specified value without announcing a change"
 
 	(type isNotNil and: [ (anObject isKindOf: type) not ])
-		ifFalse: [ self error: 'Setting value with an unexpected type' ].
+		ifTrue: [ self error: 'Setting value with an unexpected type' ].
 
 	value := anObject
 ]
