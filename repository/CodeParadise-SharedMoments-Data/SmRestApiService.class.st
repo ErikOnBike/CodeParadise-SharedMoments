@@ -326,6 +326,15 @@ SmRestApiService >> login: aRestRequest response: aServerResponse [
 			statement: 'SELECT id, createdAt, updatedAt, name FROM cameras WHERE deletedAt IS NULL AND collectionId=:collectionId'
 			bind: { #collectionId -> (each at: #id) } asDictionary.
 		each at: #cameras put: cameras ].
+
+	"Read photo frames and add to collections"
+	collections do: [ :each |
+		| photoFrames |
+		photoFrames := self
+			selectMany: #getPhotoFrames
+			statement: 'SELECT id, createdAt, updatedAt, name FROM photo_frames WHERE deletedAt IS NULL AND collectionId=:collectionId'
+			bind: { #collectionId -> (each at: #id) } asDictionary.
+		each at: #photoFrames put: photoFrames ].
  
 	"Create session and respond it"
 	self createSessionForAccount: account response: aServerResponse
