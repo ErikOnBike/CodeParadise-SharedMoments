@@ -231,6 +231,48 @@ SmRestApiService >> addCollection: aRestRequest response: aServerResponse [
 ]
 
 { #category : #API }
+SmRestApiService >> addhoto: aRestRequest response: aServerResponse [
+
+	<post: '/api/v1/photos'>
+
+	| body createdAt collectionIds width height orientation fileName |
+
+	body := (aRestRequest body) ifNil: [ self errorNoBody ].
+
+	createdAt := self class timestampNow.
+	collectionIds := (aRestRequest headerAt: #'sm-collection-ids')
+		ifNotNil: [ :ids | ids findTokens: $, ]
+		ifNil: [ self errorMissingHeader: #'SM-Collection-IDs' ].
+	width := (aRestRequest headerAt: #'sm-photo-width') asNumber.
+	height := (aRestRequest headerAt: #'sm-photo-height') asNumber.
+	orientation := aRestRequest headerAt: #'sm-photo-orientation'.
+
+	"Create file containing the photo"
+	fileName := './files/', self class newToken, '.png'.
+	CpNodeJSFS require syncWriteFile: fileName data: body options: { #flush -> true } asDictionary.
+
+	collectionIds do: [ :each |
+
+		"Insert record per photo per collection it is stored in"
+		self
+			perform: #addPhoto
+			statement: 'INSERT INTO photos (id, createdAt, collectionId, width, height, orientation, fileName) VALUES(:id, :createdAt, :collectionId, :width, :height, :orientation, :fileName)'
+			bind: {
+				#id -> self class newId.
+				#createdAt -> createdAt.
+				#collectionId -> each.
+				#width -> width.
+				#height -> height.
+				#orientation -> orientation.
+				#fileName -> fileName
+			} asDictionary ].
+
+	aServerResponse
+		statusCode: CpNodeJSRestHttpServer statusOK ;
+		end
+]
+
+{ #category : #API }
 SmRestApiService >> createSessionForAccount: aDictionary response: aServerResponse [
 
 	| id createdAt accessToken |
@@ -262,6 +304,12 @@ SmRestApiService >> createSessionForAccount: aDictionary response: aServerRespon
 SmRestApiService >> errorInvalidLogin [
 
 	self error: 'Credentials provided do not match an active account'
+]
+
+{ #category : #errors }
+SmRestApiService >> errorMissingHeader: aString [
+
+	self error: 'Missing header in REST request: ', aString
 ]
 
 { #category : #errors }
