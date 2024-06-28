@@ -113,19 +113,32 @@ SmRestApiService class >> operationFor: aCompiledMethod [
 
 	"Answer a MessageSend (used in CpNodeJSRestEndpointOperation) for the receiver and the specified Compiled Method"
 
-	| action pragma |
+	| current action pragma operation |
 
-	action := MessageSend receiver: self current selector: aCompiledMethod selector.
+	current := self current.
+	action := MessageSend receiver: current selector: aCompiledMethod selector.
 
 	pragma := aCompiledMethod pragmas
 		detect: [ :each | #(#get: #post: #put: #delete:) includes: each keyword ] ifNone: [ ^ nil ].
 
 	pragma keyword == #get:
-		ifTrue: [ ^ CpNodeJSRestEndpointOperation path: pragma arguments first getOperation: action ].
+		ifTrue: [ operation := CpNodeJSRestEndpointOperation path: pragma arguments first getOperation: action ].
 	pragma keyword == #post:
-		ifTrue: [ ^ CpNodeJSRestEndpointOperation path: pragma arguments first postOperation: action ].
+		ifTrue: [ operation := CpNodeJSRestEndpointOperation path: pragma arguments first postOperation: action ].
 	pragma keyword == #put:
-		ifTrue: [ ^ CpNodeJSRestEndpointOperation path: pragma arguments first putOperation: action ].
+		ifTrue: [ operation := CpNodeJSRestEndpointOperation path: pragma arguments first putOperation: action ].
+
+	"Add a default authorization handler for non public endpoints"
+	(aCompiledMethod pragmas detect: [ :each | each keyword = #public ] ifNone: [ nil ]	)
+		ifNil: [ operation setAuthorizationBlock: [ :restRequest | current isAuthorizedRequest: restRequest ] ].
+
+	"Add (or replace the default authorization handler with) a custom authorization handler (if specified)"
+	(aCompiledMethod pragmas detect: [ :each | each keyword = #authorization: ] ifNone: [ nil ])
+		ifNotNil: [ :authorizationPragma |
+			operation setAuthorizationBlock: [ :restRequest | current perform: authorizationPragma arguments first withArguments: { restRequest } ] ].
+
+	operation
+		ifNotNil: [ ^ operation ].
 
 	self error: 'Not implemented yet'
 ]
@@ -234,6 +247,7 @@ SmRestApiService >> addCollection: aRestRequest response: aServerResponse [
 SmRestApiService >> addhoto: aRestRequest response: aServerResponse [
 
 	<post: '/api/v1/photos'>
+	<authorization: #isAuthorizedCameraRequest:>
 
 	| body createdAt collectionIds width height orientation fileName |
 
@@ -347,10 +361,68 @@ SmRestApiService >> initialize [
 	preparedStatements := Dictionary new
 ]
 
+{ #category : #'API - authorization' }
+SmRestApiService >> isAuthorizedCameraRequest: aRestRequest [
+
+	"Authorization handler for cameras"
+
+	| accessToken |
+
+	accessToken := (aRestRequest headerAt: #authorization)
+		ifNotNil: [ :header | header withoutPrefix: 'Bearer ' ]
+		ifNil: [ ^ false ].
+
+	"Check for valid camera"
+	[
+		| matchedCameras |
+
+		matchedCameras := self
+			selectCount: #isAuthorizedCamera
+			statement: 'SELECT COUNT(*) FROM cameras WHERE accessToken=:accessToken'
+			bind: { #accessToken -> accessToken } asDictionary.
+
+		matchedCameras = 1
+			ifFalse: [ ^ false ].
+	] on: Error do: [ ^ false ].
+
+	^ true
+]
+
+{ #category : #'API - authorization' }
+SmRestApiService >> isAuthorizedRequest: aRestRequest [
+
+	"Default authorization handler"
+
+	| sessionId accessToken |
+
+	sessionId := (aRestRequest headerAt: #'sm-session-id') ifNil: [ ^ false ].
+	accessToken := (aRestRequest headerAt: #authorization)
+		ifNotNil: [ :header | header withoutPrefix: 'Bearer ' ]
+		ifNil: [ ^ false ].
+
+	"Check for valid session"
+	[
+		| matchedSessions |
+
+		matchedSessions := self
+			selectCount: #isAuthorized
+			statement: 'SELECT COUNT(*) FROM sessions WHERE id=:id AND accessToken=:accessToken'
+			bind: {
+				#id -> sessionId.
+				#accessToken -> accessToken } asDictionary.
+
+		matchedSessions = 1
+			ifFalse: [ ^ false ].
+	] on: Error do: [ ^ false ].
+
+	^ true
+]
+
 { #category : #API }
 SmRestApiService >> login: aRestRequest response: aServerResponse [
 
 	<post: '/api/v1/sessions'>
+	<public>
 
 	| body account |
 

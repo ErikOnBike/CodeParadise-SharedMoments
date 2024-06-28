@@ -14,6 +14,17 @@ Class {
 	#category : #'CodeParadise-SharedMoments-Dashboard-Model'
 }
 
+{ #category : #accessing }
+SmModel class >> application [
+
+	"Answer the application in which the receiver is running.
+
+	Implementation:
+	The current application (ie Application session) is stored in an application context (dynamic variable)."
+
+	^ CpCurrentApplicationContext application
+]
+
 { #category : #API }
 SmModel class >> basePath [
 
@@ -53,18 +64,27 @@ SmModel class >> get: aString withParameters: aDictionary [
 
 	"Perform GET operation on REST API"
 
-	| path client |
+	| path client session |
 
 	path := self basePath, ((CpNodeJSRestPathPattern fromString: aString)
 		pathUsingParameters: aDictionary).
+
+	session := self session.
 
 	[
 		client := ZnClient new
 			forJsonREST ;
 			enforceHttpSuccess: true ;
-			get: path ;
-			yourself
-	] on: ZnHttpUnsuccessful do: [ :httpError |
+			yourself.
+
+		"Add authorization information"
+		session ifNotNil: [
+			client
+				headerAt: #'SM-Session-Id' put: session id ;
+				headerAt: #Authorization put: 'Bearer ', session accessToken ].
+
+		"Perform operation"
+		client get: path ] on: ZnHttpUnsuccessful do: [ :httpError |
 		httpError response isNotFound
 			ifTrue: [ ^ nil ].
 		httpError signal ].
@@ -106,8 +126,16 @@ SmModel class >> post: aString withParameters: aDictionary body: anObject [
 	client := ZnClient new
 		forJsonREST ;
 		enforceHttpSuccess: true ;
-		post: path contents: anObject asDictionary ;
 		yourself.
+
+	"Add authorization information"
+	self session ifNotNil: [ :session |
+		client
+			headerAt: #'SM-Session-Id' put: session id ;
+			headerAt: #Authorization put: 'Bearer ', session accessToken ].
+
+	"Perform operation"
+	client post: path contents: anObject asDictionary.
 
 	client isSuccess
 		ifTrue: [ ^ client contents ]
@@ -149,8 +177,16 @@ SmModel class >> put: aString withParameters: aDictionary body: anObject [
 	client := ZnClient new
 		forJsonREST ;
 		enforceHttpSuccess: true ;
-		put: path contents: anObject asDictionary ;
 		yourself.
+
+	"Add authorization information"
+	self session ifNotNil: [ :session |
+		client
+			headerAt: #'SM-Session-Id' put: session id ;
+			headerAt: #Authorization put: 'Bearer ', session accessToken ].
+
+	"Perform operation"
+	client put: path contents: anObject asDictionary.
 
 	client isSuccess
 		ifTrue: [ ^ client contents ]
@@ -184,6 +220,14 @@ SmModel class >> reset [
 	<script>
 
 	ModelCache := nil
+]
+
+{ #category : #accessing }
+SmModel class >> session [
+
+	"Answer the Session of the current application"
+
+	^ self application session
 ]
 
 { #category : #support }

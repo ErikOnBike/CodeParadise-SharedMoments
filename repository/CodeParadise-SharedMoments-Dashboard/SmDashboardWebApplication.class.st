@@ -52,3 +52,11 @@ SmDashboardWebApplication >> reload [
 
 	super reload
 ]
+
+{ #category : #accessing }
+SmDashboardWebApplication >> session [
+
+	"Answer the session of the receiver"
+
+	^ dashboard session
+]
