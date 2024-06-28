@@ -2,7 +2,6 @@ Class {
 	#name : #SmDashboard,
 	#superclass : #CpModel,
 	#instVars : [
-		'account',
 		'session'
 	],
 	#category : #'CodeParadise-SharedMoments-Dashboard-Model'
@@ -51,6 +50,12 @@ SmDashboard >> preferredPresenterClass [
 		ifFalse: [ ^ SmLoginPresenter ].
 
 	^ super preferredPresenterClass
+]
+
+{ #category : #actions }
+SmDashboard >> reload [
+
+	session ifNotNil: [ session reload ]
 ]
 
 { #category : #accessing }

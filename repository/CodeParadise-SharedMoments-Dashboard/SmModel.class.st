@@ -8,6 +8,9 @@ Class {
 		'deletedAt',
 		'updateState'
 	],
+	#classVars : [
+		'ModelCache'
+	],
 	#category : #'CodeParadise-SharedMoments-Dashboard-Model'
 }
 
@@ -31,7 +34,16 @@ SmModel class >> fromDictionary: aDictionary [
 
 	"Answer an instance of the receiver using the specified Dictionary for content"
 
-	^ self new
+	| id |
+
+	ModelCache ifNil: [ ModelCache := Dictionary new ].
+
+	id := aDictionary at: #id ifAbsent: [
+		^ self new
+			fromDictionary: aDictionary ;
+			yourself ].
+
+	^ (ModelCache at: id ifAbsentPut: [ self new ])
 		fromDictionary: aDictionary ;
 		yourself
 ]
@@ -162,6 +174,16 @@ SmModel class >> removalPeriod [
 	"Answer the number of seconds after deletion that a model will be removed"
 
 	^ 259200 "3 days = 60 * 60 * 24 * 3"
+]
+
+{ #category : #resources }
+SmModel class >> reset [
+
+	"Reset the Model cache"
+
+	<script>
+
+	ModelCache := nil
 ]
 
 { #category : #support }

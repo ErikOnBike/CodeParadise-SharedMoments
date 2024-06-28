@@ -44,3 +44,10 @@ SmSession >> initialize [
 	"Access token is not user settable"
 	"accessToken := nil"
 ]
+
+{ #category : #actions }
+SmSession >> reload [
+
+	self hasAccount
+		ifTrue: [ self account retrieve ]
+]

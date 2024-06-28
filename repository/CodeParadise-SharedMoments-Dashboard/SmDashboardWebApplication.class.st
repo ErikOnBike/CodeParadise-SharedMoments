@@ -42,3 +42,13 @@ SmDashboardWebApplication >> initialize [
 
 	dashboard := SmDashboard new
 ]
+
+{ #category : #actions }
+SmDashboardWebApplication >> reload [
+
+	"Reload account info"
+
+	dashboard reload. 
+
+	super reload
+]
