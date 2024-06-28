@@ -417,6 +417,17 @@ SmRestApiService >> prepare: aSymbol statement: aString [
 ]
 
 { #category : #database }
+SmRestApiService >> selectCount: aSymbol statement: aString bind: aDictionary [
+
+	"Answer the count of a count query.
+	It is assumed the statement uses 'COUNT(*)' as result.
+	This is case sensitive."
+
+	^ (self selectOne: aSymbol statement: aString bind: aDictionary)
+		at: #'COUNT(*)'
+]
+
+{ #category : #database }
 SmRestApiService >> selectMany: aSymbol statement: aString bind: aDictionary [
 
 	"Select (possibly) multiple rows from the database and answer a collection"
