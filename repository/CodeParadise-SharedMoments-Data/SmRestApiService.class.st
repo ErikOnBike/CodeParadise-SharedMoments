@@ -272,7 +272,7 @@ SmRestApiService >> addhoto: aRestRequest response: aServerResponse [
 		end
 ]
 
-{ #category : #API }
+{ #category : #'API - support' }
 SmRestApiService >> createSessionForAccount: aDictionary response: aServerResponse [
 
 	| id createdAt accessToken |
@@ -324,6 +324,20 @@ SmRestApiService >> errorNoBody [
 	self error: 'No body present in REST request'
 ]
 
+{ #category : #API }
+SmRestApiService >> getAccount: aRestRequest response: aServerResponse [
+
+	<get: '/api/v1/accounts/:id'>
+
+	| account |
+
+	account := Dictionary new.
+	self readAccountWithId: (aRestRequest pathParameterAt: #id) into: account.
+
+	"Answer account"
+	self send: account response: aServerResponse
+]
+
 { #category : #initialization }
 SmRestApiService >> initialize [
 
@@ -338,7 +352,7 @@ SmRestApiService >> login: aRestRequest response: aServerResponse [
 
 	<post: '/api/v1/sessions'>
 
-	| body account collections |
+	| body account |
 
 	body := (aRestRequest jsonBody) ifNil: [ self errorNoBody ].
 	self validateBody: body expectFields: #(#email #password).
@@ -359,31 +373,8 @@ SmRestApiService >> login: aRestRequest response: aServerResponse [
 			ifFalse: [ self errorInvalidLogin ]
 	] on: Error do: [ :err | self errorInvalidLogin ].
 
-	"Read collections and add to account"
-	collections := self
-		selectMany: #getCollections
-		statement: 'SELECT id, createdAt, updatedAt, name FROM collections WHERE deletedAt IS NULL AND accountId=:accountId'
-		bind: { #accountId -> (account at: #id) } asDictionary.
-	account at: #collections put: collections.
+	self readAccountWithId: (account at: #id) into: account.
 
-	"Read cameras and add to collections"
-	collections do: [ :each |
-		| cameras |
-		cameras := self
-			selectMany: #getCameras
-			statement: 'SELECT id, createdAt, updatedAt, name FROM cameras WHERE deletedAt IS NULL AND collectionId=:collectionId'
-			bind: { #collectionId -> (each at: #id) } asDictionary.
-		each at: #cameras put: cameras ].
-
-	"Read photo frames and add to collections"
-	collections do: [ :each |
-		| photoFrames |
-		photoFrames := self
-			selectMany: #getPhotoFrames
-			statement: 'SELECT id, createdAt, updatedAt, name FROM photo_frames WHERE deletedAt IS NULL AND collectionId=:collectionId'
-			bind: { #collectionId -> (each at: #id) } asDictionary.
-		each at: #photoFrames put: photoFrames ].
- 
 	"Create session and respond it"
 	self createSessionForAccount: account response: aServerResponse
 ]
@@ -414,6 +405,46 @@ SmRestApiService >> prepare: aSymbol statement: aString [
 				ifTrue: [ statement ]
 				ifFalse: [ preparedStatements at: aSymbol put: (database prepare: aString) ] ]
 		ifAbsentPut: [ database prepare: aString ]
+]
+
+{ #category : #'API - support' }
+SmRestApiService >> readAccountWithId: aString into: aDictionary [
+
+	| collections |
+
+	"Read collections and add to account"
+	collections := self
+		selectMany: #getCollections
+		statement: 'SELECT id, createdAt, updatedAt, name FROM collections WHERE deletedAt IS NULL AND accountId=:accountId'
+		bind: { #accountId -> aString } asDictionary.
+	aDictionary at: #collections put: collections.
+
+	"Read cameras and add to collections"
+	collections do: [ :each |
+		| cameras |
+		cameras := self
+			selectMany: #getCameras
+			statement: 'SELECT id, createdAt, updatedAt, name FROM cameras WHERE deletedAt IS NULL AND collectionId=:collectionId'
+			bind: { #collectionId -> (each at: #id) } asDictionary.
+		each at: #cameras put: cameras ].
+
+	"Read photo frames and add to collections"
+	collections do: [ :each |
+		| photoFrames |
+		photoFrames := self
+			selectMany: #getPhotoFrames
+			statement: 'SELECT id, createdAt, updatedAt, name FROM photo_frames WHERE deletedAt IS NULL AND collectionId=:collectionId'
+			bind: { #collectionId -> (each at: #id) } asDictionary.
+		each at: #photoFrames put: photoFrames ].
+
+	"Read photo count and add to collections"
+	collections do: [ :each |
+		| photoCount |
+		photoCount := self
+			selectCount: #photoCount
+			statement: 'SELECT COUNT(*) FROM photos WHERE deletedAt IS NULL AND collectionId=:collectionId'
+			bind: { #collectionId -> (each at: #id) } asDictionary.
+		each at: #photoCount put: photoCount ]
 ]
 
 { #category : #database }
