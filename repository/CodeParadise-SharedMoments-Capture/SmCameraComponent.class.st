@@ -192,6 +192,15 @@ SmCameraComponent class >> template [
 	</div>'
 ]
 
+{ #category : #accessing }
+SmCameraComponent >> accessToken [
+
+	"Answer the receiver's access token"
+
+	^ CpClientEnvironment current
+		persistentVariableAt: #ACCESS_TOKEN
+]
+
 { #category : #initialization }
 SmCameraComponent >> addOrientationChangeHandler [
 
@@ -458,7 +467,7 @@ SmCameraComponent >> sendPicture: aBlob [
 			#method -> #POST.
 			#headers -> {
 				#'Content-Type' -> 'image/png'.
-				#Authorization -> 'Bearer 123'.
+				#Authorization -> ('Bearer ', self accessToken).
 				#'SM-Collection-IDs' -> '7bc9f3e9-3dda-444f-9451-7eaa0ca56396,e76343f7-d976-4ebe-8171-0768005dd3be'.
 				#'SM-Photo-Width' -> width printString.
 				#'SM-Photo-Height' -> height printString.
