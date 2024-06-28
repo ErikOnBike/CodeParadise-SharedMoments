@@ -534,7 +534,7 @@ SmCameraComponent >> videoStream [
 				#exact -> facingMode
 			} asDictionary.
 			#width -> {
-				#min -> 1280		"Use HD quality for now"
+				#ideal -> 1280		"Use HD quality for now"
 			} asDictionary
 		} asDictionary
 	} asDictionary
