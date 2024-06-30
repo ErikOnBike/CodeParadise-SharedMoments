@@ -337,7 +337,10 @@ SmCameraComponent >> initialize [
 	self addVisibilityChangeHandler.
 
 	"Add event handler to switch UI when orientation changes"
-	self addOrientationChangeHandler
+	self addOrientationChangeHandler.
+
+	"Set initial value"
+	self orientationChanged
 ]
 
 { #category : #initialization }
