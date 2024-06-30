@@ -390,7 +390,7 @@ SmRestApiService >> getPhoto: aRestRequest response: aServerResponse [
 	"Retrieve photo frame"
 	photoFrame := self
 		selectOne: #getPhotoFrame
-		statement: 'SELECT id, collectionId, recentPhotoIds FROM photo_frames WHERE accessToken=:accessToken'
+		statement: 'SELECT id, updatedAt, collectionId, recentPhotoIds FROM photo_frames WHERE accessToken=:accessToken'
 		bind: { #accessToken -> accessToken } asDictionary.
 	photoFrame ifNil: [ self errorInvalidPhotoFrame ].
 	recentPhotoIds := (photoFrame at: #recentPhotoIds) findTokens: ','.
@@ -398,26 +398,24 @@ SmRestApiService >> getPhoto: aRestRequest response: aServerResponse [
 	"Retrieve all photo records"
 	photos := self
 		selectMany: #allPhotos
-		statement: 'SELECT id, orientation, filename FROM photos WHERE collectionId=:collectionId ORDER BY id'
+		statement: 'SELECT id, createdAt, orientation, filename FROM photos WHERE collectionId=:collectionId ORDER BY primId'
 		bind: { #collectionId -> (photoFrame at: #collectionId) } asDictionary.
 
 	"Select photos"
 	photos size > recentPhotoIds size
 		ifTrue: [ photos := photos reject: [ :each | recentPhotoIds includes: (each at: #id) ] ]
 		ifFalse: [
+			"Repeat small collection showing oldest first"
 			photos := Array with: recentPhotoIds first.
 			recentPhotoIds := recentPhotoIds allButFirst ].
 
 	"Pick a more recent or otherwise random photo"
-	recentPhotoIds ifNotEmpty: [
-		| mostRecentPhotoId mostRecentIndex |
-		mostRecentPhotoId := recentPhotoIds last.
-		mostRecentIndex := photos findFirst: [ :each | (each at: #id) = mostRecentPhotoId ].
-		(mostRecentIndex > 0 and: [ mostRecentIndex < photos size ])
-			ifTrue: [ photos := Array with: (photos at: mostRecentIndex + 1) ] ].
-	photo := photos at: (photos size = 1
-		ifTrue: [ 1 ]
-		ifFalse: [ (CpNodeJSCrypto require randomIntBetween: 1 and: photos size + 1) ]).
+	(photoFrame at: #updatedAt) ifNotNil: [ :updatedAt |
+		| moreRecentPhotoIndex |
+		moreRecentPhotoIndex := photos findFirst: [ :each | (each at: #createdAt) > updatedAt ].
+		moreRecentPhotoIndex > 0
+			ifTrue: [ photos := Array with: (photos at: moreRecentPhotoIndex) ] ].
+	photo := self class randomFrom: photos.
 
 	"Keep track of recent photos"
 	recentPhotoIds := recentPhotoIds copyWith: (photo at: #id).
@@ -425,10 +423,11 @@ SmRestApiService >> getPhoto: aRestRequest response: aServerResponse [
 		ifTrue: [ recentPhotoIds := recentPhotoIds allButFirst: recentPhotoIds size - 10 ].
 	self
 		perform: #updatePhotoFrameRecentPhotos
-		statement: 'UPDATE photo_frames SET recentPhotoIds=:recentPhotoIds WHERE id=:id'
+		statement: 'UPDATE photo_frames SET recentPhotoIds=:recentPhotoIds, updatedAt=:updatedAt WHERE id=:id'
 		bind: {
 			#id -> (photoFrame at: #id).
-			#recentPhotoIds -> (',' join: recentPhotoIds) } asDictionary. 
+			#recentPhotoIds -> (',' join: recentPhotoIds).
+			#updatedAt -> self class timestampNow } asDictionary. 
 
 	self
 		send: {
