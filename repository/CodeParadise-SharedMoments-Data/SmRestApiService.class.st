@@ -399,7 +399,7 @@ SmRestApiService >> getPhoto: aRestRequest response: aServerResponse [
 		(mostRecentIndex > 0 and: [ mostRecentIndex < photos size ])
 			ifTrue: [ photos := Array with: (photos at: mostRecentIndex + 1) ] ].
 	photo := photos at: (photos size = 1
-		ifTrue: [ photos first ]
+		ifTrue: [ 1 ]
 		ifFalse: [ (CpNodeJSCrypto require randomIntBetween: 1 and: photos size + 1) ]).
 
 	"Keep track of recent photos"
