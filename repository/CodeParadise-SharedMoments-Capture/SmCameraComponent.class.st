@@ -198,7 +198,7 @@ SmCameraComponent >> accessToken [
 	"Answer the receiver's access token"
 
 	^ CpClientEnvironment current
-		persistentVariableAt: #ACCESS_TOKEN
+		variableAt: #ACCESS_TOKEN
 ]
 
 { #category : #initialization }
