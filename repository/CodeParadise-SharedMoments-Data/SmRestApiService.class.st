@@ -317,25 +317,25 @@ SmRestApiService >> createSessionForAccount: aDictionary response: aServerRespon
 { #category : #errors }
 SmRestApiService >> errorInvalidLogin [
 
-	self error: 'Credentials provided do not match an active account'
+	CpNodeJSRestUnauthorizedError signal: 'Credentials provided do not match an active account'
 ]
 
 { #category : #errors }
 SmRestApiService >> errorMissingHeader: aString [
 
-	self error: 'Missing header in REST request: ', aString
+	CpNodeJSRestBadRequestError signal: 'Missing header in REST request: ', aString
 ]
 
 { #category : #errors }
 SmRestApiService >> errorMissingInput: aString [
 
-	self error: 'Missing field in REST request: ', aString
+	CpNodeJSRestBadRequestError signal: 'Missing field in REST request: ', aString
 ]
 
 { #category : #errors }
 SmRestApiService >> errorNoBody [
 
-	self error: 'No body present in REST request'
+	CpNodeJSRestBadRequestError signal: 'No body present in REST request'
 ]
 
 { #category : #API }
