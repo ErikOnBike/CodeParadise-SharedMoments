@@ -6,10 +6,17 @@ Class {
 		'preparedStatements'
 	],
 	#classVars : [
+		'Crypto',
 		'Current'
 	],
 	#category : #'CodeParadise-SharedMoments-Data-Core'
 }
+
+{ #category : #accessing }
+SmRestApiService class >> crypto [
+
+	^ Crypto ifNil: [ Crypto := CpNodeJSCrypto require ]
+]
 
 { #category : #accessing }
 SmRestApiService class >> current [
@@ -22,7 +29,7 @@ SmRestApiService class >> hashPassword: plainTextPassword usingSalt: saltString 
 
 	"Answer a hash by performing a Password-Based Key Derivation Function 2 (PBKDF2) on the specified plain text password"
 
-	^ (CpNodeJSCrypto require
+	^ (self crypto
 		pbkdf2Password: plainTextPassword
 		salt: saltString
 		iterations: 100000
@@ -97,7 +104,7 @@ SmRestApiService class >> newId [
 
 	"Answer a new random ID (for a row)"
 
-	^ CpNodeJSCrypto require randomUUID
+	^ self crypto randomUUID
 ]
 
 { #category : #resources }
@@ -105,7 +112,7 @@ SmRestApiService class >> newToken [
 
 	"Answer a new random token value"
 
-	^ (CpNodeJSCrypto require randomBytes: 16) toStringEncoding: 'hex'
+	^ (self crypto randomBytes: 16) toStringEncoding: 'hex'
 ]
 
 { #category : #support }
@@ -156,6 +163,16 @@ SmRestApiService class >> postInstallOnce [
 				operation := self operationFor: each.
 				CpNodeJSRestEndpointOperation registerOperation: operation.
 				self traceCr: 'Registered endpoint operation: ', operation printString ] ]
+]
+
+{ #category : #resources }
+SmRestApiService class >> randomFrom: aCollection [
+
+	"Answer a random element from the specified collection"
+
+	^ aCollection size = 1
+		ifTrue: [ aCollection first ]
+		ifFalse: [ aCollection at: (self crypto randomIntBetween: 1 and: aCollection size + 1) ]
 ]
 
 { #category : #support }
