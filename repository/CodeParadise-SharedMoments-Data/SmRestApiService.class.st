@@ -321,6 +321,12 @@ SmRestApiService >> errorInvalidLogin [
 ]
 
 { #category : #errors }
+SmRestApiService >> errorInvalidPhotoFrame [
+
+	CpNodeJSRestUnauthorizedError signal: 'Missing or invalid access token for PhotoFrame'
+]
+
+{ #category : #errors }
 SmRestApiService >> errorMissingHeader: aString [
 
 	CpNodeJSRestBadRequestError signal: 'Missing header in REST request: ', aString
@@ -350,6 +356,68 @@ SmRestApiService >> getAccount: aRestRequest response: aServerResponse [
 
 	"Answer account"
 	self send: account response: aServerResponse
+]
+
+{ #category : #API }
+SmRestApiService >> getPhoto: aRestRequest response: aServerResponse [
+
+	<get: '/api/v1/photos/next'>
+	<authorization: #isAuthorizedPhotoFrameRequest:>
+
+	| accessToken photoFrame recentPhotos photos photo |
+
+	accessToken := (aRestRequest headerAt: #authorization)
+		ifNotNil: [ :header | header withoutPrefix: 'Bearer ' ]
+		ifNil: [ self errorInvalidPhotoFrame ].
+
+	"Retrieve photo frame"
+	photoFrame := self
+		selectOne: #getPhotoFrame
+		statement: 'SELECT id, collectionId, recentPhotos FROM photo_frames WHERE accessToken=:accessToken'
+		bind: { #accessToken -> accessToken } asDictionary.
+	photoFrame ifNil: [ self errorInvalidPhotoFrame ].
+	recentPhotos := (photoFrame at: #recentPhotos) findTokens: ','.
+
+	"Retrieve all photo records"
+	photos := self
+		selectMany: #allPhotos
+		statement: 'SELECT id, orientation, filename FROM photos WHERE collectionId=:collectionId ORDER BY id'
+		bind: { #collectionId -> (photoFrame at: #collectionId) } asDictionary.
+
+	"Select photos"
+	photos size > recentPhotos size
+		ifTrue: [ photos := photos reject: [ :each | recentPhotos includes: (each at: #id) ] ]
+		ifFalse: [
+			photos := Array with: recentPhotos first.
+			recentPhotos := recentPhotos allButFirst ].
+
+	"Pick a more recent or otherwise random photo"
+	recentPhotos ifNotEmpty: [
+		| mostRecentPhotoId mostRecentIndex |
+		mostRecentPhotoId := recentPhotos last.
+		mostRecentIndex := photos findFirst: [ :each | (each at: #id) = mostRecentPhotoId ].
+		(mostRecentIndex > 0 and: [ mostRecentIndex < photos size ])
+			ifTrue: [ photos := Array with: (photos at: mostRecentIndex + 1) ] ].
+	photo := photos at: (photos size = 1
+		ifTrue: [ photos first ]
+		ifFalse: [ (CpNodeJSCrypto require randomIntBetween: 1 and: photos size + 1) ]).
+
+	"Keep track of recent photos"
+	recentPhotos := recentPhotos copyWith: (photo at: #id).
+	recentPhotos size > 10
+		ifTrue: [ recentPhotos := recentPhotos allButFirst: recentPhotos size - 10 ].
+	self
+		perform: #updatePhotoFrameRecentPhotos
+		statement: 'UPDATE photo_frames SET recentPhotos=:recentPhotos WHERE id=:id'
+		bind: {
+			#id -> (photoFrame at: #id).
+			#recentPhotos -> (',' join: recentPhotos) } asDictionary. 
+
+	self
+		send: {
+			#url -> (photo at: #filename).
+			#orientation -> (photo at: #orientation) } asDictionary
+		response: aServerResponse
 ]
 
 { #category : #initialization }
@@ -382,6 +450,33 @@ SmRestApiService >> isAuthorizedCameraRequest: aRestRequest [
 			bind: { #accessToken -> accessToken } asDictionary.
 
 		matchedCameras = 1
+			ifFalse: [ ^ false ].
+	] on: Error do: [ ^ false ].
+
+	^ true
+]
+
+{ #category : #'API - authorization' }
+SmRestApiService >> isAuthorizedPhotoFrameRequest: aRestRequest [
+
+	"Authorization handler for photo frames"
+
+	| accessToken |
+
+	accessToken := (aRestRequest headerAt: #authorization)
+		ifNotNil: [ :header | header withoutPrefix: 'Bearer ' ]
+		ifNil: [ ^ false ].
+
+	"Check for valid photo frame"
+	[
+		| matchedPhotoFrames |
+
+		matchedPhotoFrames := self
+			selectCount: #isAuthorizedPhotoFrame
+			statement: 'SELECT COUNT(*) FROM photo_frames WHERE accessToken=:accessToken'
+			bind: { #accessToken -> accessToken } asDictionary.
+
+		matchedPhotoFrames = 1
 			ifFalse: [ ^ false ].
 	] on: Error do: [ ^ false ].
 
