@@ -244,7 +244,7 @@ SmRestApiService >> addCollection: aRestRequest response: aServerResponse [
 ]
 
 { #category : #API }
-SmRestApiService >> addhoto: aRestRequest response: aServerResponse [
+SmRestApiService >> addPhoto: aRestRequest response: aServerResponse [
 
 	<post: '/api/v1/photos'>
 	<authorization: #isAuthorizedCameraRequest:>
@@ -255,7 +255,7 @@ SmRestApiService >> addhoto: aRestRequest response: aServerResponse [
 
 	createdAt := self class timestampNow.
 	collectionIds := (aRestRequest headerAt: #'sm-collection-ids')
-		ifNotNil: [ :ids | ids findTokens: $, ]
+		ifNotNil: [ :ids | ids findTokens: ',' ]
 		ifNil: [ self errorMissingHeader: #'SM-Collection-IDs' ].
 	width := (aRestRequest headerAt: #'sm-photo-width') asNumber.
 	height := (aRestRequest headerAt: #'sm-photo-height') asNumber.
