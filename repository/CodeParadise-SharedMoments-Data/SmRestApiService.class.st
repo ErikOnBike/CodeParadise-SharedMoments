@@ -270,6 +270,8 @@ SmRestApiService >> addPhoto: aRestRequest response: aServerResponse [
 
 	body := (aRestRequest body) ifNil: [ self errorNoBody ].
 
+	self flag: #TODO. "Add validation of collection ids"
+
 	createdAt := self class timestampNow.
 	collectionIds := (aRestRequest headerAt: #'sm-collection-ids')
 		ifNotNil: [ :ids | ids findTokens: ',' ]
@@ -332,6 +334,12 @@ SmRestApiService >> createSessionForAccount: aDictionary response: aServerRespon
 ]
 
 { #category : #errors }
+SmRestApiService >> errorInvalidCamera [
+
+	CpNodeJSRestUnauthorizedError signal: 'Missing or invalid access token for Camera'
+]
+
+{ #category : #errors }
 SmRestApiService >> errorInvalidLogin [
 
 	CpNodeJSRestUnauthorizedError signal: 'Credentials provided do not match an active account'
@@ -376,6 +384,31 @@ SmRestApiService >> getAccount: aRestRequest response: aServerResponse [
 ]
 
 { #category : #API }
+SmRestApiService >> getCameraCollections: aRestRequest response: aServerResponse [
+
+	<get: '/api/v1/cameras/collections'>
+	<authorization: #isAuthorizedCameraRequest:>
+
+	| accessToken camera collectionIds |
+
+	accessToken := (aRestRequest headerAt: #authorization)
+		ifNotNil: [ :header | header withoutPrefix: 'Bearer ' ]
+		ifNil: [ self errorInvalidCamera ].
+
+	"Retrieve camera"
+	camera := self
+		selectOne: #getCamera
+		statement: 'SELECT collectionIds FROM cameras WHERE accessToken=:accessToken'
+		bind: { #accessToken -> accessToken } asDictionary.
+	camera ifNil: [ self errorInvalidCamera ].
+	collectionIds := (camera at: #collectionIds) findTokens: ','.
+
+	self
+		send: collectionIds asArray
+		response: aServerResponse
+]
+
+{ #category : #API }
 SmRestApiService >> getPhoto: aRestRequest response: aServerResponse [
 
 	<get: '/api/v1/photos/next'>
@@ -406,7 +439,7 @@ SmRestApiService >> getPhoto: aRestRequest response: aServerResponse [
 		ifTrue: [ photos := photos reject: [ :each | recentPhotoIds includes: (each at: #id) ] ]
 		ifFalse: [
 			"Repeat small collection showing oldest first"
-			photos := Array with: recentPhotoIds first.
+			photos := photos select: [ :each | (each at: #id) = recentPhotoIds first ].
 			recentPhotoIds := recentPhotoIds allButFirst ].
 
 	"Pick a more recent or otherwise random photo"
@@ -607,7 +640,7 @@ SmRestApiService >> readAccountWithId: aString into: aDictionary [
 		| cameras |
 		cameras := self
 			selectMany: #getCameras
-			statement: 'SELECT id, createdAt, updatedAt, name FROM cameras WHERE deletedAt IS NULL AND collectionId=:collectionId'
+			statement: 'SELECT id, createdAt, updatedAt, name FROM cameras WHERE deletedAt IS NULL AND INSTR(collectionIds,:collectionId) > 0'
 			bind: { #collectionId -> (each at: #id) } asDictionary.
 		each at: #cameras put: cameras ].
 
@@ -676,6 +709,21 @@ SmRestApiService >> send: anObject response: aServerResponse [
 		setHeaderWithName: 'Content-Type' value: 'application/json; charset=utf-8' ;
 		writeChunk: (CpJavaScriptJSON stringify: anObject) ;
 		end
+]
+
+{ #category : #'API -private' }
+SmRestApiService >> snapshot: aRestRequest response: aServerResponse [
+
+	<get: '/snapshot'>
+	<public>
+
+	self traceCr: 'Here?!!!!'.
+		Smalltalk at: #Sealed ifAbsent: [
+			Smalltalk at: #Sealed put: true.
+			self traceCr: 'About to save..'.
+			CpNodeJSSnapshot saveSnapshot.
+			self traceCr: 'After save?' ].
+	self traceCr: 'Sealed?'
 ]
 
 { #category : #API }

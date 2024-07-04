@@ -32,6 +32,6 @@ SmAccountsRestHttpServerApplication >> load [
 	super load.
 
 	self
-		installRequiredClass: CpNodeJSRestHttpServerStarter ;
+		installRequiredClass: CpNodeJSRestHttpServer ;
 		installRequiredClass: SmRestApiService
 ]
