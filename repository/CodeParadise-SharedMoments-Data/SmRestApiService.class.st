@@ -153,7 +153,11 @@ SmRestApiService class >> operationFor: aCompiledMethod [
 { #category : #'class initialization' }
 SmRestApiService class >> postInstallOnce [
 
-	"Install the endpoint operations"
+	"Start the REST server and install the endpoint operations"
+
+	CpNodeJSSnapshot registerSnapshotClass: self.
+
+	CpNodeJSRestHttpServer newOnPort: 8181.
 
 	self methodDictionary do: [ :each |
 		(self isEndpointOperation: each)
@@ -163,6 +167,20 @@ SmRestApiService class >> postInstallOnce [
 				operation := self operationFor: each.
 				CpNodeJSRestEndpointOperation registerOperation: operation.
 				self traceCr: 'Registered endpoint operation: ', operation printString ] ]
+]
+
+{ #category : #'class initialization' }
+SmRestApiService class >> postSnapshotOnce [
+
+	self postInstallOnce
+]
+
+{ #category : #'class initialization' }
+SmRestApiService class >> preSnapshotOnce [
+
+	CpNodeJSRestHttpServer allInstancesDo: [ :each | each stopServer ].
+
+	Current := nil
 ]
 
 { #category : #resources }
