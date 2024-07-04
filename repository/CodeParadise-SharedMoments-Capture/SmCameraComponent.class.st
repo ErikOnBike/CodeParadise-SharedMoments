@@ -197,8 +197,7 @@ SmCameraComponent >> accessToken [
 
 	"Answer the receiver's access token"
 
-	^ CpClientEnvironment current
-		variableAt: #ACCESS_TOKEN
+	^ SmCaptureMomentWebClientBehavior accessToken
 ]
 
 { #category : #initialization }
@@ -292,6 +291,21 @@ SmCameraComponent >> detachVideo [
 		srcObject: nil
 ]
 
+{ #category : #actions }
+SmCameraComponent >> fetchCollections [
+
+	"Retrieve the collections where the camera can store photos"
+
+	^ CpBrowserWindow current
+		fetch: 'https://paradise:9443/api/v1/cameras/collections'
+		withOptions: {
+			#method -> #GET.
+			#headers -> { #Authorization -> ('Bearer ', self accessToken) } asDictionary.
+			#mode -> #cors.
+			#redirect -> #error.
+			#priority -> #high } asDictionary
+]
+
 { #category : #accessing }
 SmCameraComponent >> flipButton [
 
@@ -312,6 +326,24 @@ SmCameraComponent >> flipImage [
 SmCameraComponent >> flipStatus [
 
 	^ self shadowedElementWithId: #'flip-status'
+]
+
+{ #category : #actions }
+SmCameraComponent >> handleFetchCollectionsResponse: aResponse [
+
+	| reader handleChunk collectionIds |
+
+	collectionIds := ''.
+	reader := aResponse body getReader.
+	handleChunk := [ :chunk |
+		self traceCr: chunk printString.
+		(chunk at: #done)
+			ifTrue: [ self traceCr: 'Result: ', collectionIds ]
+			ifFalse: [
+				collectionIds := collectionIds, (chunk at: #value) asString.
+self traceCr: 'Chunked ', collectionIds printString.
+				reader read then: handleChunk ] ].
+	reader read then: handleChunk.
 ]
 
 { #category : #actions }
@@ -340,7 +372,9 @@ SmCameraComponent >> initialize [
 	self addOrientationChangeHandler.
 
 	"Set initial value"
-	self orientationChanged
+	self orientationChanged.
+
+	"self fetchCollections then: [ :response | self handleFetchCollectionsResponse: response ]"
 ]
 
 { #category : #initialization }

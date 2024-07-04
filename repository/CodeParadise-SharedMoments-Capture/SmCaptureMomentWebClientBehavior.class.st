@@ -4,13 +4,31 @@ Class {
 	#instVars : [
 		'needsRestart'
 	],
+	#classVars : [
+		'AccessToken'
+	],
 	#category : #'CodeParadise-SharedMoments-Capture-Application'
 }
+
+{ #category : #accessing }
+SmCaptureMomentWebClientBehavior class >> accessToken [
+
+	^ AccessToken ifNil: [
+		AccessToken := CpClientEnvironment current
+			variableAt: #ACCESS_TOKEN ]
+]
 
 { #category : #'class initialization' }
 SmCaptureMomentWebClientBehavior class >> beLoaded [
 
-	CpBrowserLocation beLoaded
+	CpBrowserLocation beLoaded.
+	CpBrowserSnapshot beLoaded
+]
+
+{ #category : #accessing }
+SmCaptureMomentWebClientBehavior class >> setAccessToken: aString [
+
+	AccessToken := aString
 ]
 
 { #category : #'token handling' }
@@ -33,6 +51,7 @@ SmCaptureMomentWebClientBehavior >> handleAccessToken [
 			location := CpBrowserDocument current location.
 			location search: (location search first: (location search indexOf: $&) - 1).
 			needsRestart := true ]
+		ifNil: [ self setAccessToken: self class accessToken ]
 ]
 
 { #category : #'token handling' }
@@ -63,9 +82,17 @@ SmCaptureMomentWebClientBehavior >> initialize [
 		appendChild: SmCaptureMomentWebApplicationScreen new
 ]
 
+{ #category : #actions }
+SmCaptureMomentWebClientBehavior >> saveSnapshot [
+
+	CpBrowserSnapshot saveSnapshot
+]
+
 { #category : #'token handling' }
 SmCaptureMomentWebClientBehavior >> setAccessToken: aString [
 
 	self clientEnvironment
-		variableAt: #ACCESS_TOKEN put: aString
+		variableAt: #ACCESS_TOKEN put: aString.
+
+	self class setAccessToken: aString
 ]
