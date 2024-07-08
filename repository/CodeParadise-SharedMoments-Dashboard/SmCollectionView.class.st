@@ -25,7 +25,7 @@ SmCollectionView class >> style [
 		flex-wrap: nowrap;
 		position: relative;
 		overflow-x: hidden;
-		min-width: 50em;
+		min-width: 40em;
 		max-width: 90%;
 	}
 	#first,
