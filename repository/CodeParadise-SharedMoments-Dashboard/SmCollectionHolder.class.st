@@ -169,6 +169,6 @@ SmCollectionHolder >> setCollection: aCollection [
 	((aCollection allSatisfy: [ :each | value includes: each ]) and: [ value allSatisfy: [ :each | aCollection includes: each ] ])
 		ifTrue: [ ^ self ].
 
-	value := aCollection.
+	value := aCollection asOrderedCollection.
 	owner valueChanged
 ]
