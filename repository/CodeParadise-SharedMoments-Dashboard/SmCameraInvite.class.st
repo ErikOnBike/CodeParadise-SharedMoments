@@ -74,14 +74,15 @@ SmCameraInvite >> initialize [
 	super initialize.
 
 	collection := SmValueHolder owner: self.
-	email := SmValueHolder owner: self.
-	name := SmValueHolder owner: self.
-
+	email := SmValueHolder owner: self value: ''.
+	name := SmValueHolder owner: self value: ''.
+	token := SmValueHolder owner: self.
+	
 	"Collection, sendAt, acceptedAt and token are not user settable"
 	"collection := nil."
 	"sendAt := nil."
 	"acceptedAt := nil."
-	"token := nil"
+
 ]
 
 { #category : #initialization }
@@ -152,4 +153,16 @@ SmCameraInvite >> status [
 					self hasInvitee
 						ifTrue: [ #unsent ]
 						ifFalse: [ #empty ] ] ]
+]
+
+{ #category : #accessing }
+SmCameraInvite >> token [
+
+	^ token value
+]
+
+{ #category : #accessing }
+SmCameraInvite >> token: aString [
+
+	token value: aString
 ]

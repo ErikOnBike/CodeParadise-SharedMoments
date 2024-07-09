@@ -69,7 +69,7 @@ SmCameraInviteView class >> template [
 				<div id="token"><slot name="token"></slot></div>
 			</div>
 			<div id="footer" slot="footer">
-				<sl-button id="invite" variant="primary">Invite</sl-button><div id="sent"><span>This invite was sent </span><sl-relative-time></sl-relative-time></div>
+				<sl-button id="invite" variant="primary">Invite</sl-button><div id="sent"><!--<span>This invite was sent </span><sl-relative-time></sl-relative-time>--></div>
 			</div>
 		</sl-card>
 	</div>'
@@ -136,4 +136,10 @@ SmCameraInviteView >> renderName: nameString email: emailString [
 	self
 		render: nameString toInputAtSlotNamed: #name ;
 		render: emailString toInputAtSlotNamed: #email
+]
+
+{ #category : #rendering }
+SmCameraInviteView >> renderToken: aString [
+
+	self render: aString toInputAtSlotNamed: #token
 ]

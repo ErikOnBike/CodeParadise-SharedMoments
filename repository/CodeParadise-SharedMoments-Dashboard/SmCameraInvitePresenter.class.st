@@ -31,7 +31,8 @@ SmCameraInvitePresenter >> renderView [
 
 	self view
 		renderCollection: cameraInvite collection name ;
-		renderName: cameraInvite name email: cameraInvite email
+		renderName: cameraInvite name email: cameraInvite email ;
+		renderToken: cameraInvite token
 ]
 
 { #category : #view }

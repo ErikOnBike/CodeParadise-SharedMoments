@@ -217,7 +217,7 @@ SmRestApiService >> addCameraInvite: aRestRequest response: aServerResponse [
 
 	<post: '/api/v1/collections/:id/camera-invites'>
 
-	| id createdAt body collectionId |
+	| id createdAt body collectionId token |
 
 	body := (aRestRequest jsonBody) ifNil: [ self errorNoBody ].
 	self validateBody: body expectFields: #(#name #email #token #sentAt #acceptedAt).
@@ -225,6 +225,7 @@ SmRestApiService >> addCameraInvite: aRestRequest response: aServerResponse [
 	id := self class newId.
 	createdAt := self class timestampNow.
 	collectionId := aRestRequest pathParameterAt: #id.
+	token := self class newToken.
 
 	self
 		perform: #addCameraInvite
@@ -235,7 +236,7 @@ SmRestApiService >> addCameraInvite: aRestRequest response: aServerResponse [
 			#collectionId -> collectionId.
 			#name -> (body at: #name).
 			#email -> (body at: #email).
-			#token -> (body at: #token).
+			#token -> token.
 			#sentAt -> (body at: #sentAt).
 			#acceptedAt -> (body at: #acceptedAt)
 		} asDictionary.
@@ -243,7 +244,8 @@ SmRestApiService >> addCameraInvite: aRestRequest response: aServerResponse [
 	self
 		send: {
 			#id -> id.
-			#createdAt -> createdAt } asDictionary
+			#createdAt -> createdAt.
+			#token -> token } asDictionary
 		response: aServerResponse
 ]
 
