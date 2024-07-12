@@ -21,8 +21,7 @@ SmCaptureMomentWebClientBehavior class >> accessToken [
 { #category : #'class initialization' }
 SmCaptureMomentWebClientBehavior class >> beLoaded [
 
-	CpBrowserLocation beLoaded.
-	CpBrowserSnapshot beLoaded
+	CpBrowserLocation beLoaded
 ]
 
 { #category : #accessing }
