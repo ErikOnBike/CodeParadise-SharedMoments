@@ -36,7 +36,7 @@ SmCaptureMomentWebClientBehavior >> addInviteForToken: aString [
 
 	"For now store the invite as an access token"
 
-	self flag: #TODO
+	self flag: #todo
 ]
 
 { #category : #'token handling' }

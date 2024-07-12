@@ -290,7 +290,7 @@ SmRestApiService >> addPhoto: aRestRequest response: aServerResponse [
 
 	body := (aRestRequest body) ifNil: [ self errorNoBody ].
 
-	self flag: #TODO. "Add validation of collection ids"
+	self flag: #todo. "Add validation of collection ids"
 
 	createdAt := self class timestampNow.
 	collectionIds := (aRestRequest headerAt: #'sm-collection-ids')
