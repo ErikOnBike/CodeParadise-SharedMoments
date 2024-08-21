@@ -15,9 +15,3 @@ SmCaptureMomentWebApplication class >> allowedPackages [
 
 	^ super allowedPackages, { CpBrowserVideoElement package }
 ]
-
-{ #category : #accessing }
-SmCaptureMomentWebApplication class >> clientBehaviorClass [
-
-	^ SmCaptureMomentWebClientBehavior
-]
