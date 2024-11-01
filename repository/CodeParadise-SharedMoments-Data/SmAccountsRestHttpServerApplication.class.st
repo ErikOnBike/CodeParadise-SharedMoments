@@ -26,12 +26,21 @@ SmAccountsRestHttpServerApplication class >> app [
 	^ #'shared-moments-data'
 ]
 
+{ #category : #accessing }
+SmAccountsRestHttpServerApplication >> extensionMethodCategories [
+
+	"Answer the collection of extension method categories needed for the receiver"
+
+	^ super extensionMethodCategories,
+		#(restApplicationExtension)
+]
+
 { #category : #actions }
 SmAccountsRestHttpServerApplication >> load [
 
 	super load.
 
 	self
-		installRequiredClass: CpNodeJSRestHttpServer ;
-		installRequiredClass: SmRestApiService
+		installClass: CpNodeJSRestHttpServer ;
+		installClass: SmRestApiService
 ]
