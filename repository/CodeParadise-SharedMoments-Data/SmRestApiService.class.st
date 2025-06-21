@@ -434,7 +434,7 @@ SmRestApiService >> getPhoto: aRestRequest response: aServerResponse [
 	<get: '/api/v1/photos/next'>
 	<authorization: #isAuthorizedPhotoFrameRequest:>
 
-	| accessToken photoFrame recentPhotoIds photos photo |
+	| accessToken photoFrame recentPhotoIds photos photo newUpdatedAt |
 
 	accessToken := (aRestRequest headerAt: #authorization)
 		ifNotNil: [ :header | header withoutPrefix: 'Bearer ' ]
@@ -454,20 +454,25 @@ SmRestApiService >> getPhoto: aRestRequest response: aServerResponse [
 		statement: 'SELECT id, createdAt, orientation, filename FROM photos WHERE collectionId=:collectionId ORDER BY primId'
 		bind: { #collectionId -> (photoFrame at: #collectionId) } asDictionary.
 
-	"Select photos"
+	"Keep photos which have not been shown recently"
 	photos size > recentPhotoIds size
 		ifTrue: [ photos := photos reject: [ :each | recentPhotoIds includes: (each at: #id) ] ]
 		ifFalse: [
-			"Repeat small collection showing oldest first"
-			photos := photos select: [ :each | (each at: #id) = recentPhotoIds first ].
-			recentPhotoIds := recentPhotoIds allButFirst ].
+			recentPhotoIds ifNotEmpty: [
+				"Prevent showing last photo once more"
+				photos := photos reject: [ :each | (each at: #id) = recentPhotoIds last ] ] ].
 
 	"Pick a more recent or otherwise random photo"
 	(photoFrame at: #updatedAt) ifNotNil: [ :updatedAt |
 		| moreRecentPhotoIndex |
 		moreRecentPhotoIndex := photos findFirst: [ :each | (each at: #createdAt) > updatedAt ].
 		moreRecentPhotoIndex > 0
-			ifTrue: [ photos := Array with: (photos at: moreRecentPhotoIndex) ] ].
+			ifTrue: [
+				| newerPhoto |
+				"Make collection of size 1 with more recent photo (so it will always be selected in random draw)"
+				newerPhoto := photos at: moreRecentPhotoIndex.
+				photos := Array with: newerPhoto.
+				newUpdatedAt := newerPhoto at: #createdAt ] ].
 	photo := self class randomFrom: photos.
 
 	"Keep track of recent photos"
@@ -480,7 +485,7 @@ SmRestApiService >> getPhoto: aRestRequest response: aServerResponse [
 		bind: {
 			#id -> (photoFrame at: #id).
 			#recentPhotoIds -> (',' join: recentPhotoIds).
-			#updatedAt -> self class timestampNow } asDictionary. 
+			#updatedAt -> (newUpdatedAt ifNil: [ self class timestampNow ]) } asDictionary. 
 
 	self
 		send: {
