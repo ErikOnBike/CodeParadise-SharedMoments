@@ -68,7 +68,7 @@ SmRestApiService class >> installInstanceMethod: aCompiledMethod [
 SmRestApiService class >> isEndpointOperation: aCompiledMethod [
 
 	aCompiledMethod pragmas
-		detect: [ :each | #(#get: #post: #put: #delete:) includes: each keyword ] ifNone: [ ^ false ].
+		detect: [ :each | #(#get: #post: #put: #delete:) includes: each selector ] ifNone: [ ^ false ].
 
 	^ true
 ]
@@ -120,29 +120,22 @@ SmRestApiService class >> operationFor: aCompiledMethod [
 
 	"Answer a MessageSend (used in CpNodeJSRestEndpointOperation) for the receiver and the specified Compiled Method"
 
-	| current action pragma operation |
+	| current action pragma url operation |
 
 	current := self current.
 	action := MessageSend receiver: current selector: aCompiledMethod selector.
 
 	pragma := aCompiledMethod pragmas
-		detect: [ :each | #(#get: #post: #put: #delete:) includes: each keyword ] ifNone: [ ^ nil ].
+		detect: [ :each | #(#get: #post: #put: #delete:) includes: each selector ] ifNone: [ ^ nil ].
 
-	pragma keyword == #get:
-		ifTrue: [ operation := CpNodeJSRestEndpointOperation path: pragma arguments first getOperation: action ].
-	pragma keyword == #post:
-		ifTrue: [ operation := CpNodeJSRestEndpointOperation path: pragma arguments first postOperation: action ].
-	pragma keyword == #put:
-		ifTrue: [ operation := CpNodeJSRestEndpointOperation path: pragma arguments first putOperation: action ].
+	url := CpBrowserURL newUrl: pragma arguments first base: 'http://localhost'.
 
-	"Add a default authorization handler for non public endpoints"
-	(aCompiledMethod pragmas detect: [ :each | each keyword = #public ] ifNone: [ nil ]	)
-		ifNil: [ operation setAuthorizationBlock: [ :restRequest | current isAuthorizedRequest: restRequest ] ].
-
-	"Add (or replace the default authorization handler with) a custom authorization handler (if specified)"
-	(aCompiledMethod pragmas detect: [ :each | each keyword = #authorization: ] ifNone: [ nil ])
-		ifNotNil: [ :authorizationPragma |
-			operation setAuthorizationBlock: [ :restRequest | current perform: authorizationPragma arguments first withArguments: { restRequest } ] ].
+	pragma selector == #get:
+		ifTrue: [ operation := CpNodeJSRestEndpointOperation uri: url getOperation: action ].
+	pragma selector == #post:
+		ifTrue: [ operation := CpNodeJSRestEndpointOperation uri: url postOperation: action ].
+	pragma selector == #put:
+		ifTrue: [ operation := CpNodeJSRestEndpointOperation uri: url putOperation: action ].
 
 	operation
 		ifNotNil: [ ^ operation ].
@@ -284,7 +277,7 @@ SmRestApiService >> addCollection: aRestRequest response: aServerResponse [
 SmRestApiService >> addPhoto: aRestRequest response: aServerResponse [
 
 	<post: '/api/v1/photos'>
-	<authorization: #isAuthorizedCameraRequest:>
+	<authorization: #validateAuthorizedCameraRequest:>
 
 	| body createdAt collectionIds width height orientation fileName |
 
@@ -407,7 +400,7 @@ SmRestApiService >> getAccount: aRestRequest response: aServerResponse [
 SmRestApiService >> getCameraCollections: aRestRequest response: aServerResponse [
 
 	<get: '/api/v1/cameras/collections'>
-	<authorization: #isAuthorizedCameraRequest:>
+	<authorization: #validateAuthorizedCameraRequest:>
 
 	| accessToken camera collectionIds |
 
@@ -432,7 +425,7 @@ SmRestApiService >> getCameraCollections: aRestRequest response: aServerResponse
 SmRestApiService >> getPhoto: aRestRequest response: aServerResponse [
 
 	<get: '/api/v1/photos/next'>
-	<authorization: #isAuthorizedPhotoFrameRequest:>
+	<authorization: #validateAuthorizedPhotoFrameRequest:>
 
 	| accessToken photoFrame recentPhotoIds photos photo newUpdatedAt |
 
@@ -803,6 +796,29 @@ SmRestApiService >> updateCollection: aRestRequest response: aServerResponse [
 		response: aServerResponse
 ]
 
+{ #category : #'API - authorization' }
+SmRestApiService >> validateAuthorizedCameraRequest: aRestRequest [
+
+	"Authorization handler for cameras"
+
+	(self isAuthorizedCameraRequest: aRestRequest)
+		ifFalse: [ CpNodeJSRestForbiddenError signal ]
+]
+
+{ #category : #'API - authorization' }
+SmRestApiService >> validateAuthorizedPhotoFrameRequest: aRestRequest [
+
+	(self isAuthorizedPhotoFrameRequest: aRestRequest)
+		ifFalse: [ CpNodeJSRestForbiddenError signal ]
+]
+
+{ #category : #'API - authorization' }
+SmRestApiService >> validateAuthorizedRequest: aRestRequest [
+
+	(self isAuthorizedRequest: aRestRequest)
+		ifFalse: [ CpNodeJSRestForbiddenError signal ]
+]
+
 { #category : #validating }
 SmRestApiService >> validateBody: body expectFields: aCollection [
 
@@ -813,4 +829,10 @@ SmRestApiService >> validateBody: body expectFields: aCollection [
 
 	missingFields
 		ifNotEmpty: [ self errorMissingInput: (', ' join: missingFields) ]
+]
+
+{ #category : #'API - authorization' }
+SmRestApiService >> validatePublicAuthorizedRequest: aRestRequest [
+
+	"All is well"
 ]
