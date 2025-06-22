@@ -451,25 +451,29 @@ SmRestApiService >> getPhoto: aRestRequest response: aServerResponse [
 		statement: 'SELECT id, createdAt, orientation, filename FROM photos WHERE collectionId=:collectionId ORDER BY primId'
 		bind: { #collectionId -> (photoFrame at: #collectionId) } asDictionary.
 
-	"Keep photos which have not been shown recently"
-	photos size > recentPhotoIds size
-		ifTrue: [ photos := photos reject: [ :each | recentPhotoIds includes: (each at: #id) ] ]
-		ifFalse: [
-			recentPhotoIds ifNotEmpty: [
-				"Prevent showing last photo once more"
-				photos := photos reject: [ :each | (each at: #id) = recentPhotoIds last ] ] ].
+	"If there is only 1 photo available, just show it"
+	photos size > 1
+		ifTrue: [
 
-	"Pick a more recent or otherwise random photo"
-	(photoFrame at: #updatedAt) ifNotNil: [ :updatedAt |
-		| moreRecentPhotoIndex |
-		moreRecentPhotoIndex := photos findFirst: [ :each | (each at: #createdAt) > updatedAt ].
-		moreRecentPhotoIndex > 0
-			ifTrue: [
-				| newerPhoto |
-				"Make collection of size 1 with more recent photo (so it will always be selected in random draw)"
-				newerPhoto := photos at: moreRecentPhotoIndex.
-				photos := Array with: newerPhoto.
-				newUpdatedAt := newerPhoto at: #createdAt ] ].
+		"Keep photos which have not been shown recently"
+		photos size > recentPhotoIds size
+			ifTrue: [ photos := photos reject: [ :each | recentPhotoIds includes: (each at: #id) ] ]
+			ifFalse: [
+				recentPhotoIds ifNotEmpty: [
+					"Prevent showing last photo once more"
+					photos := photos reject: [ :each | (each at: #id) = recentPhotoIds last ] ] ].
+
+		"Pick a more recent or otherwise random photo"
+		(photoFrame at: #updatedAt) ifNotNil: [ :updatedAt |
+			| moreRecentPhotoIndex |
+			moreRecentPhotoIndex := photos findFirst: [ :each | (each at: #createdAt) > updatedAt ].
+			moreRecentPhotoIndex > 0
+				ifTrue: [
+					| newerPhoto |
+					"Make collection of size 1 with more recent photo (so it will always be selected in random draw)"
+					newerPhoto := photos at: moreRecentPhotoIndex.
+					photos := Array with: newerPhoto.
+					newUpdatedAt := newerPhoto at: #createdAt ] ] ].
 	photo := self class randomFrom: photos.
 
 	"Keep track of recent photos"
