@@ -278,6 +278,7 @@ SmRestApiService >> addPhoto: aRestRequest response: aServerResponse [
 
 	<post: '/api/v1/photos'>
 	<authorization: #validateAuthorizedCameraRequest:>
+	<maxBodySize: 8388608>
 
 	| body createdAt collectionIds width height orientation fileName |
 
@@ -291,11 +292,14 @@ SmRestApiService >> addPhoto: aRestRequest response: aServerResponse [
 		ifNil: [ self errorMissingHeader: #'SM-Collection-IDs' ].
 	width := (aRestRequest headerAt: #'sm-photo-width') asNumber.
 	height := (aRestRequest headerAt: #'sm-photo-height') asNumber.
-	orientation := aRestRequest headerAt: #'sm-photo-orientation'.
+	orientation := "aRestRequest headerAt: #'sm-photo-orientation'."
+		width > height
+			ifTrue: [ 'landscape' ]
+			ifFalse: [ 'portrait' ].
 
 	"Create file containing the photo"
 	fileName := './files/', self class newToken, '.png'.
-	CpNodeJSFS require syncWriteFile: fileName data: body options: { #flush -> true } asDictionary.
+	CpNodeJSFS require writeFileSync: fileName data: body options: { #flush -> true } asDictionary.
 
 	collectionIds do: [ :each |
 
