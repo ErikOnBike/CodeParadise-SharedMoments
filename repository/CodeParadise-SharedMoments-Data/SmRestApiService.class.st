@@ -495,6 +495,39 @@ SmRestApiService >> getPhoto: aRestRequest response: aServerResponse [
 		response: aServerResponse
 ]
 
+{ #category : #API }
+SmRestApiService >> getPhotos: aRestRequest response: aServerResponse [
+
+	<get: '/api/v1/photos'>
+	<authorization: #validateAuthorizedPhotoFrameRequest:>
+
+	| accessToken photoFrame photos |
+
+	accessToken := (aRestRequest headerAt: #authorization)
+		ifNotNil: [ :header | header withoutPrefix: 'Bearer ' ]
+		ifNil: [ self errorInvalidPhotoFrame ].
+
+	"Retrieve photo frame"
+	photoFrame := self
+		selectOne: #getPhotoFrame
+		statement: 'SELECT id, updatedAt, collectionId, recentPhotoIds FROM photo_frames WHERE accessToken=:accessToken'
+		bind: { #accessToken -> accessToken } asDictionary.
+	photoFrame ifNil: [ self errorInvalidPhotoFrame ].
+
+	"Retrieve all photo records"
+	photos := self
+		selectMany: #allPhotos
+		statement: 'SELECT id, createdAt, orientation, filename FROM photos WHERE collectionId=:collectionId ORDER BY primId'
+		bind: { #collectionId -> (photoFrame at: #collectionId) } asDictionary.
+
+	self
+		send: {
+			#photos -> (photos collect: [ :each | {
+				#url -> (each at: #filename).
+				#orientation -> (each at: #orientation) } asDictionary ]) } asDictionary
+		response: aServerResponse
+]
+
 { #category : #initialization }
 SmRestApiService >> initialize [
 
