@@ -239,7 +239,7 @@ SmCameraComponent >> addOrientationChangeHandler [
 													CpBrowserWindow current
 														addEventListener: #deviceorientation handler: [ self orientationChanged ] ] ]
 										catch: [
-											self traceCr: 'no permission' ] ] ;
+											self traceCr: 'no permission' ] ] for: self ;
 								yourself) ] ] ]
 
 					"CpBrowserWindow current
